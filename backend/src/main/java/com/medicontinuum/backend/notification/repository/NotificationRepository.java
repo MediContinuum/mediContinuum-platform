@@ -7,13 +7,17 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.medicontinuum.backend.notification.entity.Notification;
 import com.medicontinuum.backend.notification.enums.EmailDeliveryStatus;
+
+import jakarta.persistence.LockModeType;
 
 public interface NotificationRepository
         extends JpaRepository<Notification, UUID> {
@@ -57,9 +61,19 @@ public interface NotificationRepository
             UUID recipientId
     );
 
-    // Fetch pending email notifications for delivery.
-    List<Notification> findTop50ByEmailDeliveryStatusOrderByCreatedAtAsc(
-            EmailDeliveryStatus emailDeliveryStatus
+    // Fetch due email notifications and lock them during delivery.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+            SELECT n FROM Notification n
+            JOIN FETCH n.recipient
+            WHERE n.emailDeliveryStatus = :status
+              AND n.emailNextAttemptAt <= :now
+            ORDER BY n.createdAt ASC
+            """)
+    java.util.List<Notification> findDueEmailNotifications(
+            @Param("status") EmailDeliveryStatus status,
+            @Param("now") LocalDateTime now,
+            Pageable pageable
     );
 
     // Mark all unread notifications as read for a recipient.
