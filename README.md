@@ -120,8 +120,6 @@ MediContinuum integrates these workflows into a single platform.
 
 <div align="center">
 
-<img src="docs/assets/architecture.png" width="95%" alt="MediContinuum Architecture"/>
-
 </div>
 
 MediContinuum follows a modular monolithic architecture with Spring Boot as its primary backend.
@@ -244,11 +242,8 @@ medicontinuum-platform/
 
 ### Patient Dashboard
 
-<img src="docs/assets/patient-dashboard.png" width="95%" alt="Patient Dashboard"/>
 
 ### Organisation Dashboard
-
-<img src="docs/assets/organisation-dashboard.png" width="95%" alt="Organisation Dashboard"/>
 
 </div>
 
@@ -408,8 +403,6 @@ main
 ## Our Vision
 
 <div align="center">
-
-<img src="docs/assets/medicontinuum-logo.png" width="110" alt="MediContinuum Logo"/>
 
 # MediContinuum
 
