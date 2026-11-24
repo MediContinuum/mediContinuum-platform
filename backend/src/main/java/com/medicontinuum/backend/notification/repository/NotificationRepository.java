@@ -1,6 +1,7 @@
 package com.medicontinuum.backend.notification.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -68,7 +69,7 @@ public interface NotificationRepository
               AND n.emailNextAttemptAt <= :now
             ORDER BY n.createdAt ASC
             """)
-    java.util.List<Notification> findDueEmailNotifications(
+    List<Notification> findDueEmailNotifications(
             @Param("status") EmailDeliveryStatus status,
             @Param("now") LocalDateTime now,
             Pageable pageable
