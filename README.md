@@ -1,138 +1,164 @@
 
+<div align="center">
+
+<img src="docs/assets/medicontinuum-banner.png" width="100%" alt="MediContinuum Banner"/>
+
+<br/>
+
 # MediContinuum
 
-### Intelligent Medication Continuity & Healthcare Inventory Platform
+### Intelligent Medication Continuity & Healthcare Management Platform
 
-**From Prescription to Consumption to Replenishment.**
+**Connecting Patients • Empowering Families • Transforming Healthcare**
 
-MediContinuum is an intelligent healthcare management platform designed to connect patients, families, healthcare organisations, pharmacies, and medicine vendors through a unified medication and inventory ecosystem.
+<br/>
 
-It aims to simplify medication management, improve treatment adherence, automate inventory monitoring, and enable smarter healthcare supply-chain coordination using modern software engineering and AI/ML technologies.
+[![Java](https://img.shields.io/badge/Java-17%2B-orange?style=for-the-badge&logo=openjdk)](https://www.java.com/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-Backend-6DB33F?style=for-the-badge&logo=springboot)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
+[![Python](https://img.shields.io/badge/Python-AI%2FML-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Containerization-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+
+<br/>
+
+**Project Status: Initial Development**
+
+</div>
 
 ---
 
-## Overview
+## About the Project
 
-Managing medicines involves more than purchasing and storing them. Patients need to follow prescriptions, monitor daily medication intake, maintain sufficient stock, and coordinate with family members and healthcare providers.
+MediContinuum is an intelligent healthcare management platform designed to connect patients, families, healthcare organisations, pharmacies, and medicine vendors through a unified medication and inventory ecosystem.
 
-Similarly, hospitals and pharmacies need reliable inventory management, expiry tracking, supplier coordination, and timely replenishment.
+The platform focuses on the complete medication lifecycle — from prescription management and daily medicine consumption to inventory monitoring, predictive replenishment, and healthcare supply-chain coordination.
 
-MediContinuum addresses these challenges through a unified platform that connects the entire medication lifecycle.
+Our goal is to build a connected healthcare ecosystem that makes medication management smarter, more reliable, and more accessible.
+
+## The Problem
+
+Healthcare medication management is often fragmented:
+
+- Patients struggle to maintain consistent medication schedules.
+- Families lack visibility into medication adherence.
+- Medicine inventory is frequently tracked manually.
+- Pharmacies and hospitals face stock shortages and expiry issues.
+- Medicine replenishment is often reactive.
+- Communication between patients, pharmacies, and suppliers is disconnected.
+
+## Our Solution
+
+MediContinuum integrates these workflows into a single platform.
+
+| Problem | Proposed Solution |
+|---|---|
+| Medication tracking | Digital medication schedules |
+| Family coordination | Permission-based family access |
+| Medicine shortages | Automated inventory monitoring |
+| Expiry management | Batch and expiry tracking |
+| Manual medicine updates | Voice and image-assisted updates |
+| Stock prediction | AI/ML-powered forecasting |
+| Procurement | Vendor and purchase-order coordination |
+
+---
 
 ## Core Features
 
-### 1. Patient Management
+### 01. Patient Management
 - Patient registration and authentication.
 - Personal medical profiles.
 - Prescription management.
-- Medicine inventory tracking.
+- Medicine inventory.
 - Doctor appointment management.
 
-### 2. Family Healthcare Coordination
+### 02. Family Healthcare Coordination
 - Family member management.
-- Patient-authorised access to medication information.
-- Daily medication adherence monitoring.
-- Family notifications and reminders.
+- Patient-authorised access.
+- Medication adherence monitoring.
+- Family notifications.
 - Shared healthcare coordination.
 
-### 3. Smart Medication Tracking
+### 03. Smart Medication Tracking
 - Daily medication schedules.
-- Medicine intake confirmation.
+- Dose confirmation.
 - Missed-dose tracking.
 - Text-based medication updates.
 - Voice-based and image-based updates.
 - Medication history and adherence analytics.
 
-### 4. Intelligent Inventory Management
-- Real-time medicine stock tracking.
-- Automatic stock updates after confirmed consumption.
-- Minimum stock threshold configuration.
+### 04. Intelligent Medicine Inventory
+- Real-time stock monitoring.
+- Automatic inventory updates after confirmed consumption.
+- Customisable minimum stock thresholds.
 - Low-stock notifications.
-- Medicine expiry and batch tracking.
-- Stock consumption history.
+- Batch and expiry management.
+- Inventory history.
 
-### 5. Healthcare Organisation Management
-- Hospital and healthcare organisation registration.
+### 05. Healthcare Organisation Management
+- Organisation registration.
 - Patient and staff management.
 - Centralised medicine inventory.
-- Pharmacy inventory coordination.
-- Prescription and appointment management.
+- Pharmacy coordination.
 - Organisation-level analytics.
 
-### 6. Vendor & Procurement Management
-- Vendor registration and management.
+### 06. Vendor & Procurement Management
+- Vendor registration.
 - Medicine catalogue management.
 - Purchase order generation.
 - Supplier coordination.
-- Delivery and stock updates.
-- Automated replenishment workflows.
+- Delivery tracking.
+- Replenishment workflows.
 
-### 7. AI-Powered Intelligence
+### 07. AI-Powered Intelligence
 - OCR-based medicine information extraction.
 - Voice-based medication updates.
-- Predictive medicine stock forecasting.
+- Predictive stockout forecasting.
 - Inventory anomaly detection.
-- Medicine demand prediction.
+- Medicine demand forecasting.
 - Intelligent inventory recommendations.
 
 ---
 
 ## System Architecture
 
-MediContinuum follows a modular monolithic architecture using Spring Boot.
+<div align="center">
 
-```text
-                  MEDICONTINUUM
-                         |
-              React + TypeScript
-                         |
-                  REST APIs
-                         |
-                Spring Boot Backend
-                         |
-    +--------------------+--------------------+
-    |                    |                    |
- Authentication     Patient Management    Organisation
-    |                    |                    |
-    +--------------------+--------------------+
-                         |
-              Core Business Modules
-                         |
-    +--------------------+--------------------+
-    |                    |                    |
- Medication         Inventory             Procurement
- Management         Management             Management
-    |                    |                    |
- Prescription       Stock Tracking         Vendor
- Adherence          Forecasting            Management
-    |                    |                    |
-    +--------------------+--------------------+
-                         |
-                    PostgreSQL
-                         |
-                 Python AI/ML Engine
-                         |
-              OCR | Voice | Prediction
-```
+<img src="docs/assets/architecture.png" width="95%" alt="MediContinuum Architecture"/>
+
+</div>
+
+MediContinuum follows a modular monolithic architecture with Spring Boot as its primary backend.
+
+| Layer | Technology | Responsibility |
+|---|---|---|
+| Frontend | React + TypeScript | User interfaces and dashboards |
+| Backend | Java + Spring Boot | Business logic and REST APIs |
+| Database | PostgreSQL | Persistent data management |
+| AI Engine | Python | OCR, voice and predictive analytics |
+| Infrastructure | Docker | Containerisation and deployment |
 
 ---
 
 ## Technology Stack
 
-| Layer | Technologies |
+<div align="center">
+
+| Category | Technologies |
 |---|---|
 | Frontend | React, TypeScript, Tailwind CSS |
 | Backend | Java, Spring Boot |
-| Database | PostgreSQL |
-| Security | Spring Security |
 | ORM | Spring Data JPA, Hibernate |
-| API | REST APIs |
+| Security | Spring Security |
+| Database | PostgreSQL |
 | AI/ML | Python, Machine Learning |
-| Image Processing | OCR |
+| API | REST APIs |
 | Containerisation | Docker |
 | Testing | JUnit, Mockito, Postman |
 | Version Control | Git, GitHub |
 | CI/CD | GitHub Actions |
+
+</div>
 
 ---
 
@@ -145,16 +171,17 @@ medicontinuum-platform/
 │   └── Spring Boot application
 │
 ├── frontend/
-│   └── React application
+│   └── React + TypeScript application
 │
 ├── ai-engine/
-│   └── Python AI/ML services
+│   └── Python AI/ML engine
 │
 ├── infrastructure/
 │   ├── docker/
 │   └── deployment/
 │
 ├── docs/
+│   ├── assets/
 │   ├── architecture/
 │   ├── database/
 │   ├── api/
@@ -173,45 +200,166 @@ medicontinuum-platform/
 
 ---
 
-## Project Workflow
+## Medication Lifecycle
 
-The platform follows a continuous medication lifecycle:
+```text
+       PATIENT REGISTRATION
+                |
+                v
+       PRESCRIPTION CREATION
+                |
+                v
+        MEDICINE INVENTORY
+                |
+                v
+       DAILY MEDICATION PLAN
+                |
+                v
+       PATIENT CONFIRMS DOSE
+                |
+                v
+       INVENTORY AUTO-UPDATE
+                |
+                v
+         STOCK MONITORING
+                |
+         +------+------+
+         |             |
+      Available      Low Stock
+         |             |
+         v             v
+       Continue     ALERT
+                       |
+                       v
+               REPLENISHMENT
+                       |
+                       v
+                PHARMACY/VENDOR
+                       |
+                       v
+                 STOCK UPDATED
+```
 
-1. A patient registers and creates a medical profile.
-2. Prescriptions and medicines are added to the patient's account.
-3. Initial medicine inventory is recorded.
-4. Medication schedules and reminders are generated.
-5. Patients confirm medicine consumption.
-6. Confirmed consumption updates the available inventory.
-7. The system monitors stock levels and expiry dates.
-8. Low-stock alerts are sent to authorised users.
-9. Replenishment requests can be initiated.
-10. Pharmacies and vendors coordinate medicine procurement.
+---
+
+## Application Screenshots
+
+<div align="center">
+
+### Patient Dashboard
+
+<img src="docs/assets/patient-dashboard.png" width="95%" alt="Patient Dashboard"/>
+
+### Organisation Dashboard
+
+<img src="docs/assets/organisation-dashboard.png" width="95%" alt="Organisation Dashboard"/>
+
+</div>
+
+---
+
+## Development Roadmap
+
+- [ ] Project architecture and database design
+- [ ] Authentication and authorisation
+- [ ] Patient management
+- [ ] Family management and permissions
+- [ ] Medicine catalogue and prescriptions
+- [ ] Medication scheduling and adherence
+- [ ] Patient inventory management
+- [ ] Low-stock notifications
+- [ ] Healthcare organisation management
+- [ ] Vendor and procurement management
+- [ ] React dashboards
+- [ ] OCR-based medicine scanning
+- [ ] Voice-based medication updates
+- [ ] Predictive stock forecasting
+- [ ] Inventory anomaly detection
+- [ ] Testing and security hardening
+- [ ] Production deployment
 
 ---
 
 ## Security & Privacy
 
-Security and patient privacy are fundamental to MediContinuum.
+Patient privacy and data protection are fundamental to MediContinuum.
 
-Planned security mechanisms include:
+Planned security measures:
 
-- Role-based access control.
 - Secure authentication and authorisation.
-- Patient-controlled family permissions.
+- Role-based access control.
+- Patient-controlled permissions.
 - Organisation-level data isolation.
 - Encrypted communication.
 - Secure password storage.
 - Audit logging.
-- Input validation and API protection.
-
-Patient data must only be accessible to authorised users with appropriate permissions.
+- Input validation.
+- Protected document access.
 
 ---
 
-## Development Methodology
+## Getting Started
 
-MediContinuum is developed collaboratively using GitHub.
+### Prerequisites
+
+- Java 17+
+- Node.js and npm
+- Python 3.11+
+- PostgreSQL
+- Docker
+- Git
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/MediContinuum/medicontinuum-platform.git
+
+cd medicontinuum-platform
+```
+
+### Run Backend
+
+```bash
+cd backend
+
+./mvnw spring-boot:run
+```
+
+Windows:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+### Run Frontend
+
+```bash
+cd frontend
+
+npm install
+
+npm run dev
+```
+
+### Run AI Engine
+
+```bash
+cd ai-engine
+
+python -m venv venv
+
+venv\Scripts\activate
+
+pip install -r requirements.txt
+```
+
+Refer to the individual module documentation for environment configuration.
+
+---
+
+## Contribution Guidelines
+
+MediContinuum is developed collaboratively by a team of four contributors.
 
 ### Branching Strategy
 
@@ -230,58 +378,51 @@ main
 ### Contribution Workflow
 
 1. Create a feature branch.
-2. Implement the assigned functionality.
+2. Implement your assigned functionality.
 3. Commit and push changes.
 4. Create a Pull Request.
-5. Review and test the changes.
-6. Merge into the development branch.
-7. Merge stable releases into main.
+5. Participate in code review.
+6. Merge after approval and successful tests.
 
 ---
 
-## Project Status
+## Development Team
 
-**Current Phase:** Initial Development
-
-MediContinuum is being developed incrementally, starting with the core backend architecture, database design, authentication, and patient management.
-
-Advanced AI/ML functionality and healthcare organisation integrations will be introduced in subsequent development phases.
+| Member | Responsibility |
+|---|---|
+| Member 1 | Backend Architecture & Integration |
+| Member 2 | Patient & Medication Management |
+| Member 3 | Frontend Development |
+| Member 4 | AI/ML Engineering |
 
 ---
 
 ## Future Scope
 
-- Integration with healthcare interoperability standards.
+- Healthcare interoperability.
 - ABDM ecosystem integration, subject to applicable requirements and approvals.
+- Wearable healthcare device integration.
 - Advanced predictive analytics.
-- Intelligent pharmacy recommendations.
 - Multi-organisation healthcare coordination.
-- Wearable device integration.
+- Intelligent pharmacy recommendations.
 - Advanced medicine supply-chain analytics.
-
----
-
-## Team
-
-Developed collaboratively by a team of four contributors under the MediContinuum project.
-
-| Role | Responsibility |
-|---|---|
-| Member 1 | Backend Architecture & Integration |
-| Member 2 | Patient, Family & Medication Modules |
-| Member 3 | Frontend Development |
-| Member 4 | AI/ML Development |
 
 ---
 
 ## Our Vision
 
-To build a connected healthcare ecosystem where medication management, patient care, family coordination, and medicine supply chains work together seamlessly.
+<div align="center">
 
-**MediContinuum — Making Healthcare More Connected, Intelligent, and Continuous.**
+<img src="docs/assets/medicontinuum-logo.png" width="110" alt="MediContinuum Logo"/>
 
----
+# MediContinuum
 
-## License
+### Continuity in Care. Intelligence in Healthcare.
 
-This project is distributed under the MIT License. See the `LICENSE` file for details.
+**Making Healthcare More Connected, Intelligent, and Continuous.**
+
+<br/>
+
+*Built with dedication by the MediContinuum Team.*
+
+</div>
