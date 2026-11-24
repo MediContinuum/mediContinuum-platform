@@ -27,8 +27,8 @@ export const AI_QUERY_KEYS = {
   anomalies: ["ai", "anomalies"] as const,
 };
 
-export interface TextAnalysisVariables extends FeatureAITextRequest {}
-export interface FileAnalysisVariables extends FeatureAIFileRequest {}
+export type TextAnalysisVariables = FeatureAITextRequest;
+export type FileAnalysisVariables = FeatureAIFileRequest;
 
 export function useAI() {
   const queryClient = useQueryClient();
