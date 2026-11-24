@@ -1,45 +1,28 @@
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+
+import { analyticsService } from "@/services/analytics.service";
+
 import type {
-  AdherenceAnalyticsData,
   AnalyticsPeriod,
-  ConsumptionAnalytics,
-  ForecastAnalyticsData,
   InventoryAnalyticsData,
   OrganisationAnalyticsData,
   PatientAnalyticsData,
   ProcurementAnalyticsData,
 } from "../types/analytics.types";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080").replace(/\/$/, "");
-
-async function getAnalytics<T>(endpoint: string, period: AnalyticsPeriod): Promise<T> {
-  const response = await fetch(
-    `${API_BASE_URL}/api/analytics/${endpoint}?period=${encodeURIComponent(period)}`,
-    {
-      method: "GET",
-      credentials: "include",
-      headers: { Accept: "application/json" },
-    },
-  );
-
-  if (!response.ok) {
-    let message = `Analytics request failed (${response.status}).`;
-    try {
-      const body = (await response.json()) as { message?: string; error?: string };
-      message = body.message ?? body.error ?? message;
-    } catch {
-      // Keep the HTTP status message when the response is not JSON.
-    }
-    throw new Error(message);
-  }
-
-  return (await response.json()) as T;
-}
-
-import { useEffect, useState } from "react";
+/**
+ * Browser-side analytics hooks.
+ *
+ * These hooks own query keys, cache freshness, loading state, and the
+ * user-selected reporting period. The backend owns aggregation, forecasting,
+ * adherence calculations, stock valuation, and all authoritative metrics.
+ * Network requests are delegated to src/services/analytics.service.ts.
+ */
 
 export function useAnalyticsPeriod(): AnalyticsPeriod {
   const [period, setPeriod] = useState<AnalyticsPeriod>("30d");
+
   useEffect(() => {
     const handler = (event: Event) => {
       const customEvent = event as CustomEvent<AnalyticsPeriod>;
@@ -47,45 +30,80 @@ export function useAnalyticsPeriod(): AnalyticsPeriod {
         setPeriod(customEvent.detail);
       }
     };
+
     window.addEventListener("analytics-period-change", handler);
     return () => window.removeEventListener("analytics-period-change", handler);
   }, []);
+
   return period;
 }
 
-function useAnalyticsQuery<T>(key: string, endpoint: string, period: AnalyticsPeriod) {
+function useAnalyticsQuery<T>(
+  key: string,
+  period: AnalyticsPeriod,
+  queryFn: () => Promise<T>,
+) {
   return useQuery<T, Error>({
     queryKey: ["analytics", key, period],
-    queryFn: () => getAnalytics<T>(endpoint, period),
+    queryFn,
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
 }
 
 export function useAdherenceAnalytics(period: AnalyticsPeriod = "30d") {
-  return useAnalyticsQuery<AdherenceAnalyticsData>("adherence", "adherence", period);
+  return useAnalyticsQuery(
+    "adherence",
+    period,
+    () => analyticsService.getFeatureAdherence(period),
+  );
 }
 
 export function useConsumptionAnalytics(period: AnalyticsPeriod = "30d") {
-  return useAnalyticsQuery<ConsumptionAnalytics>("consumption", "consumption", period);
+  return useAnalyticsQuery(
+    "consumption",
+    period,
+    () => analyticsService.getFeatureConsumption(period),
+  );
 }
 
 export function useForecastAnalytics(period: AnalyticsPeriod = "30d") {
-  return useAnalyticsQuery<ForecastAnalyticsData>("forecast", "forecast", period);
+  return useAnalyticsQuery(
+    "forecast",
+    period,
+    () => analyticsService.getFeatureForecast(period),
+  );
 }
 
 export function useInventoryAnalytics(period: AnalyticsPeriod = "30d") {
-  return useAnalyticsQuery<InventoryAnalyticsData>("inventory", "inventory", period);
+  return useAnalyticsQuery<InventoryAnalyticsData>(
+    "inventory",
+    period,
+    () => analyticsService.getFeatureInventory(period),
+  );
 }
 
 export function useOrganisationAnalytics(period: AnalyticsPeriod = "30d") {
-  return useAnalyticsQuery<OrganisationAnalyticsData>("organisation", "organisation", period);
+  return useAnalyticsQuery<OrganisationAnalyticsData>(
+    "organisation",
+    period,
+    () => analyticsService.getFeatureOrganisation(period),
+  );
 }
 
 export function usePatientAnalytics(period: AnalyticsPeriod = "30d") {
-  return useAnalyticsQuery<PatientAnalyticsData>("patients", "patients", period);
+  return useAnalyticsQuery<PatientAnalyticsData>(
+    "patients",
+    period,
+    () => analyticsService.getFeaturePatients(period),
+  );
 }
 
 export function useProcurementAnalytics(period: AnalyticsPeriod = "30d") {
-  return useAnalyticsQuery<ProcurementAnalyticsData>("procurement", "procurement", period);
+  return useAnalyticsQuery<ProcurementAnalyticsData>(
+    "procurement",
+    period,
+    () => analyticsService.getFeatureProcurement(period),
+  );
 }
+

@@ -1,11 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/axios";
+
+import { aiService } from "@/services/ai.service";
 
 import type {
-  AIAnalysisRequest,
   AIAnalysisResult,
   AITask,
 } from "../types/ai.types";
+import type {
+  FeatureAIFileRequest,
+  FeatureAITextRequest,
+} from "@/services/ai.service";
+
+/**
+ * Browser-only React Query state for AI screens.
+ *
+ * This hook manages loading/error/result state and cache updates. It does not
+ * call backend endpoints directly or run AI/business logic; HTTP transport is
+ * centralized in src/services/ai.service.ts, and analysis is server-owned.
+ */
 
 export const AI_QUERY_KEYS = {
   all: ["ai"] as const,
@@ -15,71 +27,18 @@ export const AI_QUERY_KEYS = {
   anomalies: ["ai", "anomalies"] as const,
 };
 
-export const AI_ENDPOINTS: Record<AITask, string> = {
-  ADHERENCE_INSIGHTS: "/ai/generate",
-  INVENTORY_INSIGHTS: "/ai/generate",
-  ANOMALY_DETECTION: "/ai/generate",
-  MEDICINE_IDENTIFICATION: "/ai/medicine/identify",
-  PRESCRIPTION_SCAN: "/ai/prescriptions/scan",
-  TEXT_MEDICATION_UPDATE: "/ai/generate",
-  VOICE_MEDICATION_UPDATE: "/ai/generate",
-};
-
-interface TextAnalysisVariables {
-  task: AITask;
-  prompt: string;
-  context?: Record<string, unknown>;
-}
-
-interface FileAnalysisVariables {
-  task: "MEDICINE_IDENTIFICATION" | "PRESCRIPTION_SCAN";
-  file: File;
-  additionalContext?: string;
-}
-
-function normalizeAIResponse(
-  response: unknown,
-  task: AITask,
-): AIAnalysisResult {
-  let result = response;
-
-  if (result && typeof result === "object" && "data" in result) {
-    result = (result as { data: unknown }).data;
-  }
-
-  if (result && typeof result === "object" && "data" in result) {
-    result = (result as { data: unknown }).data;
-  }
-
-  if (!result || typeof result !== "object") {
-    return {
-      task,
-      result: String(result ?? ""),
-      requiresHumanReview: true,
-    };
-  }
-
-  return {
-    ...(result as Partial<AIAnalysisResult>),
-    task,
-    requiresHumanReview: true,
-  };
-}
+export type TextAnalysisVariables = FeatureAITextRequest;
+export type FileAnalysisVariables = FeatureAIFileRequest;
 
 export function useAI() {
   const queryClient = useQueryClient();
 
-  const textAnalysisMutation = useMutation({
-    mutationFn: async (request: TextAnalysisVariables) => {
-      const response = await api.post(AI_ENDPOINTS[request.task], {
-        task: request.task,
-        prompt: request.prompt,
-        context: request.context ?? {},
-      });
-
-      return normalizeAIResponse(response.data, request.task);
-    },
-
+  const textAnalysisMutation = useMutation<
+    AIAnalysisResult,
+    Error,
+    TextAnalysisVariables
+  >({
+    mutationFn: (request) => aiService.generateFeatureAnalysis(request),
     onSuccess: (result) => {
       queryClient.setQueryData(
         [...AI_QUERY_KEYS.insights, result.task],
@@ -88,26 +47,12 @@ export function useAI() {
     },
   });
 
-  const fileAnalysisMutation = useMutation({
-    mutationFn: async ({
-      task,
-      file,
-      additionalContext,
-    }: FileAnalysisVariables) => {
-      const formData = new FormData();
-
-      formData.append("file", file);
-      formData.append("task", task);
-
-      if (additionalContext) {
-        formData.append("context", additionalContext);
-      }
-
-      const response = await api.post(AI_ENDPOINTS[task], formData);
-
-      return normalizeAIResponse(response.data, task);
-    },
-
+  const fileAnalysisMutation = useMutation<
+    AIAnalysisResult,
+    Error,
+    FileAnalysisVariables
+  >({
+    mutationFn: (request) => aiService.analyzeFeatureFile(request),
     onSuccess: (result) => {
       queryClient.setQueryData(
         [...AI_QUERY_KEYS.insights, result.task],
@@ -116,14 +61,18 @@ export function useAI() {
     },
   });
 
+  /**
+   * Submit a task and optional user content. Analysis instructions and
+   * business rules are resolved by the backend task handler.
+   */
   const runTextAnalysis = (
     task: AITask,
-    prompt: string,
+    input?: string,
     context?: Record<string, unknown>,
   ) => {
     return textAnalysisMutation.mutateAsync({
       task,
-      prompt,
+      input,
       context,
     });
   };

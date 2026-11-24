@@ -22,6 +22,11 @@ function toDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Browser-only calendar presentation. It groups API-provided dose rows by
+ * their scheduled date for display; it does not calculate adherence metrics
+ * or infer missing dose statuses.
+ */
 function AdherenceCalendar({
   doses,
   selectedDate,
@@ -148,6 +153,10 @@ function AdherenceCalendar({
             (dose) => getDoseStatus(dose) === "MISSED",
           );
 
+          const hasScheduled = dayDoses.some((dose) =>
+            ["PENDING", "SCHEDULED", "SNOOZED"].includes(getDoseStatus(dose)),
+          );
+
           const isSelected = selectedDate === dateKey;
           const isToday = today === dateKey;
 
@@ -176,9 +185,13 @@ function AdherenceCalendar({
                         ? "bg-emerald-500"
                         : hasMissed
                           ? "bg-rose-500"
-                          : isSelected
-                            ? "bg-white"
-                            : "bg-amber-500"
+                          : hasScheduled
+                            ? isSelected
+                              ? "bg-white"
+                              : "bg-amber-500"
+                            : isSelected
+                              ? "bg-white"
+                              : "bg-slate-400"
                     }`}
                   />
                 </span>
@@ -201,7 +214,12 @@ function AdherenceCalendar({
 
         <span className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="size-2 rounded-full bg-amber-500" />
-          Other scheduled doses
+          Scheduled
+        </span>
+
+        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="size-2 rounded-full bg-slate-400" />
+          Status unavailable
         </span>
       </div>
     </section>

@@ -5,6 +5,7 @@ import { useAI } from "../hooks/useAI";
 import AIInventoryInsights from "../components/AIInventoryInsights";
 import AnomalyDetectionPanel from "../components/AnomalyDetectionPanel";
 
+/** Displays AI analysis returned by the API without inventing finding metadata. */
 function InventoryIntelligencePage() {
   const { runTextAnalysis, textResult, isAnalyzingText, error, reset } =
     useAI();
@@ -19,24 +20,20 @@ function InventoryIntelligencePage() {
     id: finding.id ?? String(index),
     title: finding.title,
     description: finding.summary,
-    severity: finding.severity ?? ("MEDIUM" as const),
+    severity: finding.severity,
     category: finding.category,
     recommendation: finding.recommendations?.join("; "),
-    detectedAt: new Date().toISOString(),
+    detectedAt: finding.createdAt,
   }));
 
   async function analyseInventory() {
-    await runTextAnalysis(
-      "INVENTORY_INSIGHTS",
-      "Analyse the authorised inventory records available to this user. Highlight stock levels, expiry-related observations and unusual patterns only where supported by supplied data. Do not invent quantities or recommend clinical substitutions.",
-    );
+    // The backend selects the inventory analysis policy and authorised data.
+    await runTextAnalysis("INVENTORY_INSIGHTS");
   }
 
   async function detectInventoryAnomalies() {
-    await runTextAnalysis(
-      "ANOMALY_DETECTION",
-      "Review authorised medicine inventory activity for unusual stock or transaction patterns. Return observations supported by data and indicate where human review is necessary.",
-    );
+    // Detection thresholds, evidence checks, and recommendations are server-owned.
+    await runTextAnalysis("ANOMALY_DETECTION");
   }
 
   const errorMessage =

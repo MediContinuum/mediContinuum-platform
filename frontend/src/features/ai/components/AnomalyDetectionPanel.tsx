@@ -21,6 +21,7 @@ const severityStyles: Record<string, string> = {
   CRITICAL: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
+/** UI-only list for anomaly metadata returned by the backend analysis API. */
 function AnomalyDetectionPanel({
   anomalies = [],
   loading = false,
@@ -96,14 +97,16 @@ function AnomalyDetectionPanel({
                       {anomaly.title}
                     </h3>
 
-                    <span
-                      className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
-                        severityStyles[anomaly.severity] ??
-                        "border-border bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {anomaly.severity}
-                    </span>
+                    {anomaly.severity && (
+                      <span
+                        className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
+                          severityStyles[anomaly.severity] ??
+                          "border-border bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {anomaly.severity}
+                      </span>
+                    )}
                   </div>
 
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">

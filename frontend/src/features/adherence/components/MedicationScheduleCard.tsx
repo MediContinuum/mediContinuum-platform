@@ -23,6 +23,11 @@ interface MedicationScheduleCardProps {
   showDate?: boolean;
 }
 
+/**
+ * Displays one dose record returned by the adherence API.
+ * Visible actions are UI affordances only; the backend validates permissions
+ * and every requested dose-status transition.
+ */
 function MedicationScheduleCard({
   dose,
   timeZone,
@@ -36,7 +41,9 @@ function MedicationScheduleCard({
 
   const status = getDoseStatus(dose);
 
-  const canUpdate = !["TAKEN", "SKIPPED", "MISSED"].includes(status);
+  // This controls visible UI actions only. The backend must validate every
+  // requested transition; unknown or unrecognised statuses get no actions.
+  const canUpdate = ["PENDING", "SCHEDULED", "SNOOZED"].includes(status);
 
   return (
     <article className="rounded-xl border border-border bg-card p-4 shadow-sm transition hover:shadow-md">

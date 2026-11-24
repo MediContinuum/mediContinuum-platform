@@ -35,9 +35,10 @@ export interface AIAnalysisResult {
   disclaimer?: string;
 }
 
+/** Browser request shape: the backend owns task instructions and analysis rules. */
 export interface AIAnalysisRequest {
   task: AITask;
-  prompt: string;
+  input?: string;
   context?: Record<string, unknown>;
 }
 
@@ -52,8 +53,10 @@ export interface AIAnomaly {
   id: string;
   title: string;
   description: string;
-  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  /** Severity is optional because only the server may classify a finding. */
+  severity?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   category?: string;
+  /** Timestamp supplied by the API; the browser must not invent detection time. */
   detectedAt?: string;
   recommendation?: string;
 }
