@@ -1,13 +1,12 @@
 package com.medicontinuum.backend.notification.service;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 @Component
-@ConditionalOnBean(JavaMailSender.class)
 @ConditionalOnProperty(
     prefix = "notification.email",
     name = "enabled",
@@ -16,6 +15,9 @@ import org.springframework.stereotype.Component;
 public class NotificationEmailSender {
 
     private final JavaMailSender mailSender;
+
+    @Value("${notification.email.from:${spring.mail.username:}}")
+    private String fromAddress;
 
     public NotificationEmailSender(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -28,6 +30,10 @@ public class NotificationEmailSender {
     ) {
 
         SimpleMailMessage mail = new SimpleMailMessage();
+
+        if (fromAddress != null && !fromAddress.isBlank()) {
+            mail.setFrom(fromAddress);
+        }
 
         mail.setTo(recipientEmail);
         mail.setSubject(subject);
