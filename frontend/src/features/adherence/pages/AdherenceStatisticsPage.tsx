@@ -4,8 +4,9 @@ import { useAdherence } from "../hooks/useAdherence";
 
 import AdherenceStatistics from "../components/AdherenceStatistics";
 
+/** Displays the adherence summary returned by the backend API. */
 function AdherenceStatisticsPage() {
-  const { schedules, summary, isLoading, isError, error, refetch } =
+  const { summary, isLoading, isError, error, refetch } =
     useAdherence();
 
   if (isLoading) {
