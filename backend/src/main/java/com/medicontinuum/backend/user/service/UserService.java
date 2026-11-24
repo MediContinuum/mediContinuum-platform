@@ -1,22 +1,29 @@
 package com.medicontinuum.backend.user.service;
 
+import java.util.List;
 import java.util.UUID;
 
-import org.jspecify.annotations.Nullable;
-import org.springframework.stereotype.Service;
-
 import com.medicontinuum.backend.user.dto.CreateUserRequest;
+import com.medicontinuum.backend.user.dto.UpdateUserRequest;
 import com.medicontinuum.backend.user.dto.UserResponse;
 
-@Service
-public interface  UserService {
+public interface UserService {
 
-    UserResponse createUser(CreateUserRequest request, String encodedPassword);
+    UserResponse createUser(
+            CreateUserRequest request,
+            String encodedPassword
+    );
 
-    @Nullable
-    Object getAllUsers();
+    List<UserResponse> getAllUsers();
 
-    @Nullable
-    Object getUserById(UUID id);
+    UserResponse getUserById(UUID id);
 
+    UserResponse getUserByGlobalId(String globalUserId);
+
+    UserResponse updateUser(
+            UUID id,
+            UpdateUserRequest request
+    );
+
+    void deactivateUser(UUID id);
 }
