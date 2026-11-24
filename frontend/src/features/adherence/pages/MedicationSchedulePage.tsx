@@ -1,4 +1,4 @@
-import { CalendarClock, Clock3, Pill } from "lucide-react";
+import { CalendarClock, Pill } from "lucide-react";
 
 import { useAdherence } from "../hooks/useAdherence";
 
@@ -41,8 +41,6 @@ function MedicationSchedulePage() {
       </div>
     );
   }
-
-
 
   return (
     <main className="space-y-6">
