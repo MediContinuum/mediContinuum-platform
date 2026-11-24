@@ -80,8 +80,12 @@ export function getDoseMedicineName(dose: MedicationDose): string {
   return dose.medicineName ?? dose.medicationName ?? dose.name ?? "Medication";
 }
 
+/**
+ * Return only the status supplied by the adherence API.
+ * Missing status must remain unknown; the browser must not assume PENDING.
+ */
 export function getDoseStatus(dose: MedicationDose): AdherenceStatus {
-  return (dose.status ?? "PENDING").toUpperCase() as AdherenceStatus;
+  return (dose.status ?? "UNKNOWN").toUpperCase() as AdherenceStatus;
 }
 
 export function getDoseDateKey(
@@ -174,6 +178,7 @@ export function getDoseDosage(dose: MedicationDose): string {
 
 export function getDoseStatusLabel(status: AdherenceStatus): string {
   const labels: Record<string, string> = {
+    UNKNOWN: "Status unavailable",
     PENDING: "Pending",
     SCHEDULED: "Scheduled",
     TAKEN: "Taken",
