@@ -59,6 +59,10 @@ public class FamilyConnection {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "responded_at")
+    private LocalDateTime respondedAt;
+
+
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -125,5 +129,15 @@ public class FamilyConnection {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public LocalDateTime getRespondedAt() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getRespondedAt'");
+    }
+
+    public void setRespondedAt(Object object) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setRespondedAt'");
     }
 }
