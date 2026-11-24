@@ -41,6 +41,10 @@ public class NotificationEmailDeliveryService {
         int processed = 0;
 
         for (Notification notification : pending) {
+
+            int attempts = notification.getEmailAttemptCount() + 1;
+            notification.setEmailAttemptCount(attempts);
+
             try {
                 notificationEmailSender.sendEmail(
                         notification.getRecipient().getEmail(),
@@ -54,9 +58,6 @@ public class NotificationEmailDeliveryService {
                 notification.setEmailNextAttemptAt(null);
 
             } catch (Exception exception) {
-
-                int attempts = notification.getEmailAttemptCount() + 1;
-                notification.setEmailAttemptCount(attempts);
 
                 String reason = exception.getMessage();
                 if (reason == null || reason.isBlank()) {
