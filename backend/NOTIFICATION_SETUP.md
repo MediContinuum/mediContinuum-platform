@@ -26,7 +26,7 @@ export NOTIFICATION_EMAIL_ENABLED=true
 export MAIL_HOST=smtp.gmail.com
 export MAIL_PORT=587
 export MAIL_USERNAME='your-sender@gmail.com'
-export MAIL_PASSWORD='your-16-character-app-password'
+export MAIL_PASSWORD='your-16-digit-app-password'
 export MAIL_FROM='your-sender@gmail.com'
 ```
 
