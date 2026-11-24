@@ -4,8 +4,9 @@ import { useAdherence } from "../hooks/useAdherence";
 
 import AdherenceStatistics from "../components/AdherenceStatistics";
 
+/** Displays the adherence summary returned by the backend API. */
 function AdherenceStatisticsPage() {
-  const { schedules, summary, isLoading, isError, error, refetch } =
+  const { summary, isLoading, isError, error, refetch } =
     useAdherence();
 
   if (isLoading) {
@@ -18,7 +19,7 @@ function AdherenceStatisticsPage() {
     );
   }
 
-  if (isError && schedules.length === 0 && !summary) {
+  if (isError && !summary) {
     return (
       <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-rose-800">
         <h2 className="font-semibold">Unable to load adherence statistics</h2>
@@ -67,7 +68,8 @@ function AdherenceStatisticsPage() {
         </button>
       </header>
 
-      <AdherenceStatistics summary={summary} doses={schedules} />
+      {/* Render only the authoritative aggregate returned by the API. */}
+      <AdherenceStatistics summary={summary} />
 
       <section className="rounded-xl border border-border bg-card p-5">
         <h2 className="font-semibold text-foreground">
@@ -75,10 +77,10 @@ function AdherenceStatisticsPage() {
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Statistics are calculated from the dose records returned by the
-          adherence service. They describe recorded medication activity and
-          should not be treated as a clinical assessment or a substitute for
-          advice from your healthcare professional.
+          Aggregate totals and adherence percentages are calculated by the
+          backend and displayed as returned. Individual medication records are
+          not used to reconstruct summary metrics in the browser. These records
+          describe recorded activity and are not a clinical assessment.
         </p>
       </section>
     </main>
