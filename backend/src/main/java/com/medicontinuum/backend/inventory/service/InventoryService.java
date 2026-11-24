@@ -61,4 +61,6 @@ public interface InventoryService {
     );
 
     int expireOldBatches();
+
+    int notifyExpiringBatches(int withinDays);
 }
