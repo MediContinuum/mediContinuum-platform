@@ -7,18 +7,41 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build outputs & TypeScript build info
 dist
 dist-ssr
-*.local
+*.tsbuildinfo
 
-# Editor directories and files
+# Environment variables (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# Testing & coverage
+coverage
+test-results
+playwright-report
+blob-report
+playwright/.cache
+
+# Editor & OS files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
 .idea
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+
+# Local misc
+*.local

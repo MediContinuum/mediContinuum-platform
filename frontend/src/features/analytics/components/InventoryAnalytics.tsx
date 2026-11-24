@@ -1,0 +1,37 @@
+import { AlertTriangle, Boxes, IndianRupee, PackageX } from "lucide-react";
+import type { InventoryAnalyticsData } from "../types/analytics.types";
+import ConsumptionChart from "./ConsumptionChart";
+
+interface Props { data: InventoryAnalyticsData }
+
+function InventoryAnalytics({ data }: Props) {
+  const cards = [
+    { label: "Total inventory items", value: data.totalItems, icon: Boxes },
+    { label: "Low stock", value: data.lowStockItems, icon: AlertTriangle },
+    { label: "Out of stock", value: data.outOfStockItems, icon: PackageX },
+    { label: "Expiring items", value: data.expiringItems, icon: AlertTriangle },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {cards.map(({ label, value, icon: Icon }) => (
+          <div key={label} className="rounded-xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between"><p className="text-sm text-muted-foreground">{label}</p><Icon className="size-5 text-[#087E8B]" /></div>
+            <p className="mt-3 text-2xl font-bold text-foreground">{value.toLocaleString()}</p>
+          </div>
+        ))}
+      </div>
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground"><IndianRupee className="size-4" /> Estimated stock value</div>
+        <p className="mt-2 text-2xl font-bold text-foreground">₹{data.stockValue.toLocaleString("en-IN")}</p>
+      </div>
+      <div className="grid gap-5 xl:grid-cols-2">
+        <ConsumptionChart data={data.stockTrend} title="Stock movement" />
+        <ConsumptionChart data={data.categories} title="Inventory by category" description="Category-wise item count" />
+      </div>
+    </div>
+  );
+}
+
+export default InventoryAnalytics;
