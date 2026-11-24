@@ -45,3 +45,6 @@ Thumbs.db
 
 # Local misc
 *.local
+
+# Local Vite console capture
+npm-dev-output.txt
