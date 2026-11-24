@@ -4,10 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { analyticsService } from "@/services/analytics.service";
 
 import type {
-  AdherenceAnalyticsData,
   AnalyticsPeriod,
-  ConsumptionAnalytics,
-  ForecastAnalyticsData,
   InventoryAnalyticsData,
   OrganisationAnalyticsData,
   PatientAnalyticsData,
@@ -110,9 +107,3 @@ export function useProcurementAnalytics(period: AnalyticsPeriod = "30d") {
   );
 }
 
-// Keep the feature response types explicitly referenced here as part of the
-// hook contract. No metric values are computed in this browser module.
-type AnalyticsResponseContract =
-  | AdherenceAnalyticsData
-  | ConsumptionAnalytics
-  | ForecastAnalyticsData;
