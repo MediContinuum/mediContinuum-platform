@@ -28,12 +28,10 @@ import com.medicontinuum.backend.user.entity.User;
 import com.medicontinuum.backend.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-@Slf4j
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
@@ -58,7 +56,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         String deduplicationKey = "GENERAL:" + UUID.randomUUID();
 
-        return createAndDeliver(
+        return createAndQueue(
             recipient,
             NotificationType.GENERAL,
             title,
@@ -375,7 +373,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     // =========================================================
-    // Helper: Create, save and optionally send email
+    // Helper: Create and queue an optional email
     // =========================================================
 
     private NotificationResponse createAndDeliver(
