@@ -91,7 +91,7 @@ public class NotificationServiceImpl implements NotificationService {
         String deduplicationKey =
             "MISSED_DOSE:" + doseScheduleId;
 
-        return createAndDeliver(
+        return createAndQueue(
             recipient,
             NotificationType.MISSED_DOSE,
             title,
@@ -128,7 +128,7 @@ public class NotificationServiceImpl implements NotificationService {
         String deduplicationKey =
             "LOW_STOCK:" + inventoryItemId + ":" + LocalDate.now();
 
-        return createAndDeliver(
+        return createAndQueue(
             recipient,
             NotificationType.LOW_STOCK,
             title,
@@ -168,7 +168,7 @@ public class NotificationServiceImpl implements NotificationService {
         String deduplicationKey =
             "EXPIRY_WARNING:" + batchId + ":" + expiryDate;
 
-        return createAndDeliver(
+        return createAndQueue(
             recipient,
             NotificationType.EXPIRY_WARNING,
             title,
@@ -202,7 +202,7 @@ public class NotificationServiceImpl implements NotificationService {
         String deduplicationKey =
             "PRESCRIPTION_CREATED:" + prescriptionId;
 
-        return createAndDeliver(
+        return createAndQueue(
             recipient,
             NotificationType.PRESCRIPTION_CREATED,
             title,
@@ -376,7 +376,7 @@ public class NotificationServiceImpl implements NotificationService {
     // Helper: Create and queue an optional email
     // =========================================================
 
-    private NotificationResponse createAndDeliver(
+    private NotificationResponse createAndQueue(
         User recipient,
         NotificationType type,
         String title,
