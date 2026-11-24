@@ -2,10 +2,12 @@ package com.medicontinuum.backend.inventory.service.impl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +52,9 @@ public class InventoryServiceImpl implements InventoryService {
     private final MedicineRepository medicineRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+
+    @Value("${app.time-zone:Asia/Kolkata}")
+    private String appTimeZone;
 
     // ---------------------------------------------------------
     // 1. Add a new medicine batch
@@ -734,6 +739,10 @@ public class InventoryServiceImpl implements InventoryService {
                 : transaction.getPerformedBy().getFullName(),
             transaction.getCreatedAt()
         );
+    }
+
+    private LocalDate today() {
+        return LocalDate.now(ZoneId.of(appTimeZone));
     }
 
     private String normalizeUnit(String value) {

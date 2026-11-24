@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +41,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Value("${notification.email.enabled:false}")
     private boolean emailEnabled;
+
+    @Value("${app.time-zone:Asia/Kolkata}")
+    private String appTimeZone;
 
     // ---------------------------------------------------------
     // 1. General notification

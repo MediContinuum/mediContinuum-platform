@@ -4,5 +4,6 @@ public enum DoseStatus {
     PENDING,
     TAKEN,
     SKIPPED,
-    MISSED
+    MISSED,
+    CANCELLED
 }
