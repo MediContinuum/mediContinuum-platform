@@ -1,9 +1,10 @@
-import { CalendarClock, Clock3, Pill } from "lucide-react";
+import { CalendarClock, Pill } from "lucide-react";
 
 import { useAdherence } from "../hooks/useAdherence";
 
 import TodayMedicationList from "../components/TodayMedicationList";
 
+/** Displays server-supplied schedules; this page does not calculate status totals. */
 function MedicationSchedulePage() {
   const {
     schedules,
@@ -41,14 +42,6 @@ function MedicationSchedulePage() {
     );
   }
 
-  const takenCount = schedules.filter(
-    (dose) => (dose.status ?? "").toUpperCase() === "TAKEN",
-  ).length;
-
-  const pendingCount = schedules.filter((dose) =>
-    ["PENDING", "SCHEDULED"].includes((dose.status ?? "PENDING").toUpperCase()),
-  ).length;
-
   return (
     <main className="space-y-6">
       <header>
@@ -66,42 +59,12 @@ function MedicationSchedulePage() {
         </p>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <article className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Total doses</p>
-
-            <Pill className="size-5 text-[#087E8B]" />
-          </div>
-
-          <p className="mt-3 text-3xl font-semibold text-foreground">
-            {schedules.length}
-          </p>
-        </article>
-
-        <article className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Completed</p>
-
-            <Clock3 className="size-5 text-emerald-600" />
-          </div>
-
-          <p className="mt-3 text-3xl font-semibold text-emerald-600">
-            {takenCount}
-          </p>
-        </article>
-
-        <article className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Pending</p>
-
-            <CalendarClock className="size-5 text-amber-600" />
-          </div>
-
-          <p className="mt-3 text-3xl font-semibold text-amber-600">
-            {pendingCount}
-          </p>
-        </article>
+      {/* Count only the rows currently returned for display; statuses are not re-aggregated here. */}
+      <section className="rounded-xl border border-border bg-card p-5">
+        <p className="text-sm text-muted-foreground">Schedule entries returned</p>
+        <p className="mt-2 text-3xl font-semibold text-foreground">
+          {schedules.length.toLocaleString()}
+        </p>
       </section>
 
       <div className="rounded-xl border border-border bg-card p-5">
