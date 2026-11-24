@@ -16,13 +16,17 @@ function AdherenceProgress({
   label = "Medication adherence",
   description,
 }: AdherenceProgressProps) {
-  const hasPercentage =
-    typeof percentage === "number" && Number.isFinite(percentage);
+  const normalizedPercentage =
+    typeof percentage === "number" && Number.isFinite(percentage)
+      ? percentage
+      : null;
+  const hasPercentage = normalizedPercentage !== null;
 
   // Clamp only for safe visual rendering; never change the API value itself.
-  const safePercentage = hasPercentage
-    ? Math.min(100, Math.max(0, percentage))
-    : 0;
+  const safePercentage =
+    normalizedPercentage === null
+      ? 0
+      : Math.min(100, Math.max(0, normalizedPercentage));
 
   return (
     <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
