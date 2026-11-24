@@ -5,6 +5,7 @@ import { useAI } from "../hooks/useAI";
 import AIInventoryInsights from "../components/AIInventoryInsights";
 import AnomalyDetectionPanel from "../components/AnomalyDetectionPanel";
 
+/** Displays AI analysis returned by the API without inventing finding metadata. */
 function InventoryIntelligencePage() {
   const { runTextAnalysis, textResult, isAnalyzingText, error, reset } =
     useAI();
@@ -19,10 +20,10 @@ function InventoryIntelligencePage() {
     id: finding.id ?? String(index),
     title: finding.title,
     description: finding.summary,
-    severity: finding.severity ?? ("MEDIUM" as const),
+    severity: finding.severity,
     category: finding.category,
     recommendation: finding.recommendations?.join("; "),
-    detectedAt: new Date().toISOString(),
+    detectedAt: finding.createdAt,
   }));
 
   async function analyseInventory() {
