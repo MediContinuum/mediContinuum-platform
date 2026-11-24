@@ -1,4 +1,5 @@
 package com.medicontinuum.backend.patient.dto;
 
-public class PatientDto {
+public class PaitentResponse {
+    
 }
