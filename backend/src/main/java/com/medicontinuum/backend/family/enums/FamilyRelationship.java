@@ -1,5 +1,12 @@
 package com.medicontinuum.backend.family.enums;
 
-public class FamilyRelationship {
-    
+public enum FamilyRelationship {
+    PARENT,
+    CHILD,
+    SPOUSE,
+    SIBLING,
+    GRANDPARENT,
+    GRANDCHILD,
+    RELATIVE,
+    OTHER
 }
