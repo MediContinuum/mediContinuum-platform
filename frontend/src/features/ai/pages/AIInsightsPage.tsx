@@ -18,6 +18,7 @@ function getErrorMessage(error: unknown): string | null {
     : "AI analysis could not be completed.";
 }
 
+/** Renders backend-generated insights; this page does not run analysis rules. */
 function AIInsightsPage() {
   const { runTextAnalysis, textResult, isAnalyzingText, error, reset } =
     useAI();
@@ -34,9 +35,9 @@ function AIInsightsPage() {
         id: finding.id ?? String(index),
         title: finding.title,
         description: finding.summary,
-        severity: finding.severity ?? "MEDIUM",
+        severity: finding.severity,
         category: finding.category,
-        detectedAt: new Date().toISOString(),
+        detectedAt: finding.createdAt,
         recommendation: finding.recommendations?.join("; "),
       })),
     [anomalyResult],
