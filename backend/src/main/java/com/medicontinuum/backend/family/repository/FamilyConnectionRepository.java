@@ -1,6 +1,5 @@
 package com.medicontinuum.backend.family.repository;
 
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
