@@ -10,7 +10,6 @@ import type {
 import type {
   AdherenceSummaryView,
   MedicationDose,
-  AdherenceStatus,
 } from "../types/adherence.types";
 
 /* -------------------------------------------------------------------------- */
@@ -98,6 +97,13 @@ interface UpdateDoseVariables {
   status: "TAKEN" | "SKIPPED";
 }
 
+/**
+ * Browser-side query and mutation state for adherence screens.
+ *
+ * This hook delegates all reads and writes to adherenceService. It may submit
+ * a requested dose status and refresh cached API data, but the backend must
+ * validate permissions, perform state transitions, and calculate summaries.
+ */
 export function useAdherence(options: UseAdherenceOptions = {}) {
   const queryClient = useQueryClient();
 
