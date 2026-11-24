@@ -24,6 +24,11 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(
@@ -39,6 +44,11 @@ import jakarta.persistence.UniqueConstraint;
         )
     }
 )
+@Getter
+@Setter 
+@ToString 
+@AllArgsConstructor 
+@RequiredArgsConstructor 
 public class User {
 
     @Id
@@ -78,9 +88,6 @@ public class User {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    public User() {
-    }
 
     @PrePersist
     protected void onCreate() {
