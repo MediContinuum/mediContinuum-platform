@@ -36,7 +36,9 @@ function MedicationScheduleCard({
 
   const status = getDoseStatus(dose);
 
-  const canUpdate = !["TAKEN", "SKIPPED", "MISSED"].includes(status);
+  // This controls visible UI actions only. The backend must validate every
+  // requested transition; unknown or unrecognised statuses get no actions.
+  const canUpdate = ["PENDING", "SCHEDULED", "SNOOZED"].includes(status);
 
   return (
     <article className="rounded-xl border border-border bg-card p-4 shadow-sm transition hover:shadow-md">
