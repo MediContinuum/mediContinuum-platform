@@ -88,7 +88,7 @@ public class Notification {
     @Column(name = "email_sent_at")
     private LocalDateTime emailSentAt;
 
-    @Column(name = "email_attempt_count", nullable = false)
+    @Column(name = "email_attempt_count", nullable = false, columnDefinition = "integer default 0")
     private int emailAttemptCount;
 
     @Column(name = "email_next_attempt_at")
