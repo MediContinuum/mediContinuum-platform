@@ -1,6 +1,6 @@
 package com.medicontinuum.backend.user.enums;
 
-public class UserRole {
+public enum UserRole {
     PATIENT,
     FAMILY_MEMBER,
     CAREGIVER,
