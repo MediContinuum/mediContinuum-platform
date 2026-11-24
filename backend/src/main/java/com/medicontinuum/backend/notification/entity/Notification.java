@@ -88,6 +88,12 @@ public class Notification {
     @Column(name = "email_sent_at")
     private LocalDateTime emailSentAt;
 
+    @Column(name = "email_attempt_count", nullable = false)
+    private int emailAttemptCount;
+
+    @Column(name = "email_next_attempt_at")
+    private LocalDateTime emailNextAttemptAt;
+
     @Column(name = "email_failure_reason", length = 500)
     private String emailFailureReason;
 
