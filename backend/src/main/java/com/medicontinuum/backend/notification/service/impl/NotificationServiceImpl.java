@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +23,6 @@ import com.medicontinuum.backend.notification.enums.EmailDeliveryStatus;
 import com.medicontinuum.backend.notification.enums.NotificationType;
 import com.medicontinuum.backend.notification.mapper.NotificationMapper;
 import com.medicontinuum.backend.notification.repository.NotificationRepository;
-import com.medicontinuum.backend.notification.service.NotificationEmailSender;
 import com.medicontinuum.backend.notification.service.NotificationService;
 import com.medicontinuum.backend.user.entity.User;
 import com.medicontinuum.backend.user.repository.UserRepository;
@@ -41,8 +39,6 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final NotificationMapper notificationMapper;
-
-    private final ObjectProvider<NotificationEmailSender> emailSenderProvider;
 
     @Value("${notification.email.enabled:false}")
     private boolean emailEnabled;
@@ -407,11 +403,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (!requestEmail) {
             initialEmailStatus = EmailDeliveryStatus.NOT_REQUESTED;
-        } else if (!emailEnabled ||
-                   emailSenderProvider.getIfAvailable() == null) {
+        } else if (!emailEnabled) {
             initialEmailStatus = EmailDeliveryStatus.DISABLED;
         } else {
-            // Will be changed to SENT or FAILED after the attempt.
             initialEmailStatus = EmailDeliveryStatus.PENDING;
         }
 
@@ -423,49 +417,15 @@ public class NotificationServiceImpl implements NotificationService {
             .referenceId(referenceId)
             .deduplicationKey(deduplicationKey)
             .emailDeliveryStatus(initialEmailStatus)
+            .emailNextAttemptAt(
+                initialEmailStatus == EmailDeliveryStatus.PENDING
+                    ? LocalDateTime.now()
+                    : null
+            )
             .build();
 
         Notification saved = notificationRepository.save(notification);
 
-        if (requestEmail &&
-            emailEnabled &&
-            emailSenderProvider.getIfAvailable() != null) {
-
-            try {
-                NotificationEmailSender sender =
-                    emailSenderProvider.getIfAvailable();
-
-                sender.sendEmail(
-                    recipient.getEmail(),
-                    saved.getTitle(),
-                    saved.getMessage()
-                );
-
-                saved.setEmailDeliveryStatus(EmailDeliveryStatus.SENT);
-                saved.setEmailSentAt(LocalDateTime.now());
-                saved.setEmailFailureReason(null);
-
-            } catch (Exception exception) {
-
-                log.error(
-                    "Email notification failed for notification {}",
-                    saved.getId(),
-                    exception
-                );
-
-                saved.setEmailDeliveryStatus(EmailDeliveryStatus.FAILED);
-
-                String error = exception.getMessage();
-
-                if (error != null && error.length() > 500) {
-                    error = error.substring(0, 500);
-                }
-
-                saved.setEmailFailureReason(error);
-            }
-
-            saved = notificationRepository.save(saved);
-        }
 
         return notificationMapper.toResponse(saved);
     }
