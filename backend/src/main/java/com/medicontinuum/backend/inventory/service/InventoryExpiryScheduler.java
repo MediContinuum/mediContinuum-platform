@@ -44,7 +44,7 @@ public class InventoryExpiryScheduler {
 
         if (count > 0) {
             log.info(
-                "Created {} medicine expiry notification(s)",
+                "Processed {} expiring medicine batch notification(s)",
                 count
             );
         }
