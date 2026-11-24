@@ -25,28 +25,28 @@ function AdherenceStatistics({ summary }: AdherenceStatisticsProps) {
   const statistics = [
     {
       title: "Total doses",
-      value: summary?.totalDoses ?? "—",
+      value: summary?.totalDoses?.toLocaleString() ?? "—",
       description: "Reported by the adherence service",
       icon: ListChecks,
       iconClass: "bg-sky-50 text-sky-700",
     },
     {
       title: "Taken",
-      value: summary?.takenDoses ?? "—",
+      value: summary?.takenDoses?.toLocaleString() ?? "—",
       description: "Reported as taken",
       icon: CheckCircle2,
       iconClass: "bg-emerald-50 text-emerald-700",
     },
     {
       title: "Missed",
-      value: summary?.missedDoses ?? "—",
+      value: summary?.missedDoses?.toLocaleString() ?? "—",
       description: "Reported as missed",
       icon: XCircle,
       iconClass: "bg-rose-50 text-rose-700",
     },
     {
       title: "Pending",
-      value: summary?.pendingDoses ?? "—",
+      value: summary?.pendingDoses?.toLocaleString() ?? "—",
       description: "Reported as pending",
       icon: Clock3,
       iconClass: "bg-amber-50 text-amber-700",
@@ -69,7 +69,7 @@ function AdherenceStatistics({ summary }: AdherenceStatisticsProps) {
                   <p className="text-sm text-muted-foreground">{item.title}</p>
 
                   <p className="mt-2 text-3xl font-semibold tracking-tight text-foreground">
-                    {item.value.toLocaleString?.() ?? item.value}
+                    {item.value}
                   </p>
                 </div>
 
