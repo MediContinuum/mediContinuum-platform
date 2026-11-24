@@ -1,0 +1,9 @@
+﻿package com.medicontinuum.backend.organisation.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/organisation")
+public class OrganisationController {
+}
