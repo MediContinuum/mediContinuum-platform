@@ -36,6 +36,7 @@ import com.medicontinuum.backend.prescription.enums.PrescriptionStatus;
 import com.medicontinuum.backend.prescription.repository.PrescriptionRepository;
 import com.medicontinuum.backend.user.entity.User;
 import com.medicontinuum.backend.user.repository.UserRepository;
+import com.medicontinuum.backend.notification.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,6 +49,7 @@ public class AdherenceServiceImpl implements AdherenceService {
     private final PrescriptionRepository prescriptionRepository;
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Value("${adherence.missed-grace-hours:2}")
     private long missedGraceHours;
@@ -343,15 +345,32 @@ public class AdherenceServiceImpl implements AdherenceService {
     public int markOverdueDosesAsMissed() {
 
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-
         OffsetDateTime cutoff = now.minusHours(missedGraceHours);
 
-        return doseScheduleRepository.markOverdueDosesAsMissed(
-            DoseStatus.PENDING,
-            DoseStatus.MISSED,
-            cutoff,
-            now
-        );
+        List<DoseSchedule> overdueSchedules =
+            doseScheduleRepository
+                .findTop100ByStatusAndScheduledAtBeforeOrderByScheduledAtAsc(
+                    DoseStatus.PENDING,
+                    cutoff
+                );
+
+        for (DoseSchedule schedule : overdueSchedules) {
+
+            schedule.setStatus(DoseStatus.MISSED);
+            doseScheduleRepository.save(schedule);
+
+            PrescriptionItem item = schedule.getPrescriptionItem();
+            Patient patient = item.getPrescription().getPatient();
+
+            notificationService.notifyMissedDose(
+                patient.getUser().getEmail(),
+                schedule.getId(),
+                item.getMedicine().getName(),
+                schedule.getScheduledAt()
+            );
+        }
+
+        return overdueSchedules.size();
     }
 
     // ---------------------------------------------------------

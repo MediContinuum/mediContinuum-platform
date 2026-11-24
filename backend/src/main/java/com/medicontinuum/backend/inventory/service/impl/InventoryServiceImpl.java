@@ -33,6 +33,7 @@ import com.medicontinuum.backend.patient.entity.Patient;
 import com.medicontinuum.backend.patient.repository.PatientRepository;
 import com.medicontinuum.backend.user.entity.User;
 import com.medicontinuum.backend.user.repository.UserRepository;
+import com.medicontinuum.backend.notification.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -48,6 +49,7 @@ public class InventoryServiceImpl implements InventoryService {
     private final PatientRepository patientRepository;
     private final MedicineRepository medicineRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     // ---------------------------------------------------------
     // 1. Add a new medicine batch
@@ -163,7 +165,9 @@ public class InventoryServiceImpl implements InventoryService {
 
         inventoryTransactionRepository.save(transaction);
 
-        return toInventoryResponse(inventoryItem);
+        InventoryResponse response = toInventoryResponse(inventoryItem);
+        notifyIfLowStock(inventoryItem, response);
+        return response;
     }
 
     // ---------------------------------------------------------
@@ -343,7 +347,9 @@ public class InventoryServiceImpl implements InventoryService {
 
         inventoryBatchRepository.flush();
 
-        return toInventoryResponse(item);
+        InventoryResponse response = toInventoryResponse(item);
+        notifyIfLowStock(item, response);
+        return response;
     }
 
     // ---------------------------------------------------------
@@ -366,7 +372,9 @@ public class InventoryServiceImpl implements InventoryService {
 
         InventoryItem updated = inventoryItemRepository.save(item);
 
-        return toInventoryResponse(updated);
+        InventoryResponse response = toInventoryResponse(updated);
+        notifyIfLowStock(updated, response);
+        return response;
     }
 
     // ---------------------------------------------------------
@@ -501,6 +509,66 @@ public class InventoryServiceImpl implements InventoryService {
         inventoryBatchRepository.flush();
 
         return expiredCount;
+    }
+
+    // ---------------------------------------------------------
+    // 12. Notify patients about batches approaching expiry
+    // ---------------------------------------------------------
+
+    @Override
+    public int notifyExpiringBatches(int withinDays) {
+
+        if (withinDays < 1 || withinDays > 365) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Expiry warning window must be between 1 and 365 days"
+            );
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate expiryLimit = today.plusDays(withinDays);
+
+        List<InventoryBatch> expiringBatches =
+            inventoryBatchRepository
+                .findByExpiryDateBetweenAndQuantityRemainingGreaterThanOrderByExpiryDateAsc(
+                    today,
+                    expiryLimit,
+                    BigDecimal.ZERO
+                );
+
+        for (InventoryBatch batch : expiringBatches) {
+
+            InventoryItem item = batch.getInventoryItem();
+
+            notificationService.notifyExpiryWarning(
+                item.getPatient().getUser().getEmail(),
+                batch.getId(),
+                item.getMedicine().getName(),
+                batch.getExpiryDate(),
+                batch.getQuantityRemaining(),
+                item.getStockUnit()
+            );
+        }
+
+        return expiringBatches.size();
+    }
+
+    private void notifyIfLowStock(
+        InventoryItem item,
+        InventoryResponse response
+    ) {
+
+        if (!response.lowStock()) {
+            return;
+        }
+
+        notificationService.notifyLowStock(
+            item.getPatient().getUser().getEmail(),
+            item.getId(),
+            item.getMedicine().getName(),
+            response.availableQuantity(),
+            item.getStockUnit()
+        );
     }
 
     // =========================================================

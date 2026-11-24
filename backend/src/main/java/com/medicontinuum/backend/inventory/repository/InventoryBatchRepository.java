@@ -50,6 +50,13 @@ public interface InventoryBatchRepository
     );
 
     List<InventoryBatch>
+    findByExpiryDateBetweenAndQuantityRemainingGreaterThanOrderByExpiryDateAsc(
+        LocalDate fromDate,
+        LocalDate toDate,
+        BigDecimal quantity
+    );
+
+    List<InventoryBatch>
     findByInventoryItem_IdAndExpiryDateBetweenAndQuantityRemainingGreaterThanOrderByExpiryDateAsc(
         UUID inventoryItemId,
         LocalDate fromDate,

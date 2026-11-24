@@ -20,6 +20,7 @@ import com.medicontinuum.backend.prescription.service.PrescriptionService;
 
 import com.medicontinuum.backend.user.entity.User;
 import com.medicontinuum.backend.user.repository.UserRepository;
+import com.medicontinuum.backend.notification.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,6 +41,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     private final MedicineRepository medicineRepository;
     private final UserRepository userRepository;
     private final PrescriptionMapper prescriptionMapper;
+    private final NotificationService notificationService;
 
     @Override
     public PrescriptionResponse createPrescription(
@@ -113,6 +115,12 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         // 5. Save prescription and all its items
         Prescription savedPrescription =
             prescriptionRepository.save(prescription);
+
+        notificationService.notifyPrescriptionCreated(
+            patient.getUser().getEmail(),
+            savedPrescription.getId(),
+            doctor.getFullName()
+        );
 
         return prescriptionMapper.toResponse(savedPrescription);
     }
