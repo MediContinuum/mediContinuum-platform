@@ -1,18 +1,28 @@
 interface AdherenceProgressProps {
-  percentage: number;
+  percentage?: number | null;
   label?: string;
   description?: string;
 }
 
+/**
+ * Displays a percentage supplied by the adherence API.
+ *
+ * The browser only formats the value and sizes the progress indicator. It
+ * does not assign adherence bands, calculate clinical thresholds, or make
+ * recommendations based on the percentage.
+ */
 function AdherenceProgress({
   percentage,
   label = "Medication adherence",
   description,
 }: AdherenceProgressProps) {
-  const safePercentage = Math.min(
-    100,
-    Math.max(0, Number.isFinite(percentage) ? percentage : 0),
-  );
+  const hasPercentage =
+    typeof percentage === "number" && Number.isFinite(percentage);
+
+  // Clamp only for safe visual rendering; never change the API value itself.
+  const safePercentage = hasPercentage
+    ? Math.min(100, Math.max(0, percentage))
+    : 0;
 
   return (
     <section className="rounded-xl border border-border bg-card p-5 shadow-sm">
@@ -26,17 +36,22 @@ function AdherenceProgress({
         </div>
 
         <span className="text-2xl font-bold text-[#087E8B]">
-          {safePercentage.toFixed(1)}%
+          {hasPercentage ? `${safePercentage.toFixed(1)}%` : "—"}
         </span>
       </div>
 
       <div
         className="mt-5 h-2.5 overflow-hidden rounded-full bg-muted"
         role="progressbar"
-        aria-valuenow={safePercentage}
+        aria-valuenow={hasPercentage ? safePercentage : undefined}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={label}
+        aria-valuetext={
+          hasPercentage
+            ? `${safePercentage.toFixed(1)} percent`
+            : "No percentage reported"
+        }
       >
         <div
           className="h-full rounded-full bg-[#087E8B] transition-all duration-500"
@@ -44,13 +59,11 @@ function AdherenceProgress({
         />
       </div>
 
-      <p className="mt-3 text-xs text-muted-foreground">
-        {safePercentage >= 90
-          ? "Excellent adherence progress."
-          : safePercentage >= 70
-            ? "Good progress. Keep following your prescribed schedule."
-            : "Review your medication schedule and follow your clinician's instructions."}
-      </p>
+      {!hasPercentage && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          The adherence service has not supplied a percentage for this period.
+        </p>
+      )}
     </section>
   );
 }
