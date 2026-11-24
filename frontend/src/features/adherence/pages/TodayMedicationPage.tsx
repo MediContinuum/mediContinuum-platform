@@ -38,6 +38,8 @@ function TodayMedicationPage() {
 
   const today = getTodayKey();
 
+  // This is a display filter for the selected calendar day only. Dose status,
+  // adherence totals, and reminder decisions remain authoritative backend data.
   const todayDoses = useMemo(
     () => schedules.filter((dose) => getDoseDateKey(dose, timeZone) === today),
     [schedules, timeZone, today],
@@ -116,40 +118,18 @@ function TodayMedicationPage() {
         </div>
       </header>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Total scheduled doses</p>
-
-          <p className="mt-2 text-3xl font-semibold text-foreground">
-            {todayDoses.length}
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Completed doses</p>
-
-          <p className="mt-2 text-3xl font-semibold text-emerald-600">
-            {
-              todayDoses.filter(
-                (dose) => (dose.status ?? "").toUpperCase() === "TAKEN",
-              ).length
-            }
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Pending doses</p>
-
-          <p className="mt-2 text-3xl font-semibold text-amber-600">
-            {
-              todayDoses.filter((dose) =>
-                ["PENDING", "SCHEDULED"].includes(
-                  (dose.status ?? "PENDING").toUpperCase(),
-                ),
-              ).length
-            }
-          </p>
-        </div>
+      <section className="rounded-xl border border-border bg-card p-5">
+        <p className="text-sm text-muted-foreground">
+          Scheduled entries returned for today
+        </p>
+        <p className="mt-2 text-3xl font-semibold text-foreground">
+          {todayDoses.length.toLocaleString()}
+        </p>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">
+          Current dose statuses are displayed in the list below as returned by
+          the adherence service. The browser does not recalculate completed or
+          pending dose totals.
+        </p>
       </section>
 
       <TodayMedicationList
