@@ -2,6 +2,8 @@
 
 The frontend is a browser application built with React, TypeScript, Vite, React Router, and TanStack Query.
 
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the frontend/backend boundary, API integration rules, and contribution checklist.
+
 ## Frontend/backend boundary
 
 The `frontend/` directory contains presentation and browser-side application code only:
