@@ -24,6 +24,8 @@ Implement authoritative rules and processing in the Spring Boot backend and expo
 
 Feature hooks may call frontend API adapters in `src/services/`. The adapter owns HTTP details and the feature hook owns only browser query/mutation state. Do not call `fetch` or create a second Axios client inside a feature.
 
+AI screens send a task identifier and optional user-provided text only. Do not put model prompts, clinical instructions, anomaly rules, or inventory analysis policies in feature pages; the backend must own those task definitions and access the authorised data.
+
 Current examples:
 
 - `features/adherence/hooks/useAdherence.ts` uses `services/adherence.service.ts`.
