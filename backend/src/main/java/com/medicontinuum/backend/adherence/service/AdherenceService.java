@@ -47,4 +47,6 @@ public interface AdherenceService {
     );
 
     int markOverdueDosesAsMissed();
+
+    int cancelPendingSchedules(UUID prescriptionId);
 }

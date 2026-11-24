@@ -9,7 +9,7 @@ The backend stores in-app notifications in PostgreSQL. Email is optional and is 
 - Adding stock, consuming stock, or changing a stock threshold checks the resulting usable quantity and creates a `LOW_STOCK` notification when the threshold is reached.
 - A daily scheduler creates `EXPIRY_WARNING` notifications for positive-quantity batches expiring within the configured warning window.
 - Deduplication keys prevent repeated alerts for the same dose, prescription, batch expiry, or inventory item/day.
-- The email worker processes pending mail asynchronously, records the result, and retries failures with a capped exponential delay. The default maximum is five attempts.
+- The email worker atomically claims due jobs using PostgreSQL `FOR UPDATE SKIP LOCKED`, commits the claim, sends SMTP outside the transaction, and records success or a capped exponential retry. Stale `PROCESSING` claims are requeued after the configured timeout. The default maximum is five attempts.
 - In-app notification reads, counts, mark-as-read, mark-all-as-read, and delete remain available when email is disabled.
 
 ## Gmail SMTP setup (local development)
@@ -51,6 +51,8 @@ The main defaults are:
 | `notification.email.enabled` | `false` | Global SMTP switch |
 | `notification.email.delivery-delay-ms` | `30000` | Email worker polling delay |
 | `notification.email.max-attempts` | `5` | Maximum failed delivery attempts |
+| `notification.email.batch-size` | `50` | Maximum jobs claimed per worker run |
+| `notification.email.processing-timeout-minutes` | `15` | Recovery time for stale worker claims |
 | `adherence.missed-grace-hours` | `2` | How late a dose can be before being marked missed |
 | `adherence.missed-check-delay-ms` | `60000` | Missed-dose scheduler delay |
 | `inventory.expiry-warning-days` | `30` | Expiry notification window |
@@ -63,7 +65,7 @@ Start the backend from the `backend` directory:
 ./mvnw clean spring-boot:run
 ```
 
-The local Hibernate setting is `spring.jpa.hibernate.ddl-auto=update`; it adds the new email retry columns to an existing notification table. Do not use Hibernate schema auto-update as the production migration strategy.
+The local Hibernate setting defaults to `spring.jpa.hibernate.ddl-auto=update`; it creates/updates the notification retry and worker-claim columns for local development. This repository does not yet include complete versioned migrations for all current modules, so do not switch to Flyway or use Hibernate schema auto-update as the production migration strategy until the full schema baseline and upgrade migrations have been reviewed and tested.
 
 ## Notification REST API
 
@@ -96,8 +98,8 @@ The bearer-token example assumes a JWT authentication implementation is configur
 
 ## Operational limitations to address before production
 
-- This scheduler is intended for a single application instance. For multi-instance or high-volume deployments, use a dedicated outbox/queue with atomic claiming, dead-letter handling, and delivery metrics.
-- SMTP delivery is at-least-once: if SMTP accepts a message but the database commit fails, a retry can send a duplicate.
+- Email jobs are claimed with PostgreSQL `FOR UPDATE SKIP LOCKED`, allowing multiple workers to claim different rows. A worker claim expires after `notification.email.processing-timeout-minutes` (default 15).
+- SMTP delivery remains at-least-once: if SMTP accepts a message but the subsequent database update fails, a retry can send a duplicate. SMTP does not provide a general idempotency key for this flow.
 - The current repository does not yet contain persisted per-user notification preferences, web-push/device-token endpoints, or a working React authentication/notification interface.
 - Replace `ddl-auto=update` with reviewed versioned schema migrations before production.
 - Rotate any database credential that has previously been committed to Git history; removing it from the latest file does not erase it from old commits.

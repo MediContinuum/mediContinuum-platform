@@ -17,6 +17,7 @@ import com.medicontinuum.backend.prescription.exception.PrescriptionNotFoundExce
 import com.medicontinuum.backend.prescription.mapper.PrescriptionMapper;
 import com.medicontinuum.backend.prescription.repository.PrescriptionRepository;
 import com.medicontinuum.backend.prescription.service.PrescriptionService;
+import com.medicontinuum.backend.prescription.event.PrescriptionStoppedEvent;
 
 import com.medicontinuum.backend.user.entity.User;
 import com.medicontinuum.backend.user.repository.UserRepository;
@@ -24,6 +25,7 @@ import com.medicontinuum.backend.notification.service.NotificationService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +44,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     private final UserRepository userRepository;
     private final PrescriptionMapper prescriptionMapper;
     private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public PrescriptionResponse createPrescription(
@@ -200,6 +203,12 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
         Prescription updatedPrescription =
             prescriptionRepository.save(prescription);
+
+        if (status != PrescriptionStatus.ACTIVE) {
+            eventPublisher.publishEvent(
+                new PrescriptionStoppedEvent(updatedPrescription.getId(), status)
+            );
+        }
 
         return prescriptionMapper.toResponse(updatedPrescription);
     }

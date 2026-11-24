@@ -313,7 +313,8 @@ public class AdherenceServiceImpl implements AdherenceService {
         }
 
         if (schedule.getStatus() == DoseStatus.TAKEN ||
-            schedule.getStatus() == DoseStatus.SKIPPED) {
+            schedule.getStatus() == DoseStatus.SKIPPED ||
+            schedule.getStatus() == DoseStatus.CANCELLED) {
 
             throw new ResponseStatusException(
                 HttpStatus.CONFLICT,
@@ -349,9 +350,10 @@ public class AdherenceServiceImpl implements AdherenceService {
 
         List<DoseSchedule> overdueSchedules =
             doseScheduleRepository
-                .findTop100ByStatusAndScheduledAtBeforeOrderByScheduledAtAsc(
+                .findTop100ByStatusAndScheduledAtBeforeAndPrescriptionItem_Prescription_StatusOrderByScheduledAtAsc(
                     DoseStatus.PENDING,
-                    cutoff
+                    cutoff,
+                    PrescriptionStatus.ACTIVE
                 );
 
         for (DoseSchedule schedule : overdueSchedules) {
@@ -371,6 +373,21 @@ public class AdherenceServiceImpl implements AdherenceService {
         }
 
         return overdueSchedules.size();
+    }
+
+
+    // ---------------------------------------------------------
+    // Cancel pending schedules when a prescription is no longer active
+    // ---------------------------------------------------------
+
+    @Override
+    public int cancelPendingSchedules(UUID prescriptionId) {
+        return doseScheduleRepository.cancelPendingSchedules(
+            prescriptionId,
+            DoseStatus.PENDING,
+            DoseStatus.CANCELLED,
+            OffsetDateTime.now(ZoneOffset.UTC)
+        );
     }
 
     // ---------------------------------------------------------

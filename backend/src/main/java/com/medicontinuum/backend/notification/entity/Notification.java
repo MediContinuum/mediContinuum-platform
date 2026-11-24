@@ -44,6 +44,10 @@ import lombok.Setter;
         @Index(
             name = "idx_notification_recipient_read",
             columnList = "recipient_id, read_at"
+        ),
+        @Index(
+            name = "idx_notification_email_queue",
+            columnList = "email_delivery_status, email_next_attempt_at"
         )
     }
 )
@@ -93,6 +97,12 @@ public class Notification {
 
     @Column(name = "email_next_attempt_at")
     private LocalDateTime emailNextAttemptAt;
+
+    @Column(name = "email_processing_started_at")
+    private LocalDateTime emailProcessingStartedAt;
+
+    @Column(name = "email_processing_token")
+    private UUID emailProcessingToken;
 
     @Column(name = "email_failure_reason", length = 500)
     private String emailFailureReason;
