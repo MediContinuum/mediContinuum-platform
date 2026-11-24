@@ -6,77 +6,48 @@ import {
   XCircle,
 } from "lucide-react";
 
-import type {
-  AdherenceSummaryView,
-  MedicationDose,
-} from "../types/adherence.types";
-
-import { getDoseStatus } from "../types/adherence.types";
+import type { AdherenceSummaryView } from "../types/adherence.types";
 
 import AdherenceProgress from "./AdherenceProgress";
 
 interface AdherenceStatisticsProps {
   summary?: AdherenceSummaryView | null;
-  doses?: MedicationDose[];
 }
 
-function AdherenceStatistics({
-  summary,
-  doses = [],
-}: AdherenceStatisticsProps) {
-  const taken =
-    summary?.takenDoses ??
-    doses.filter((dose) => getDoseStatus(dose) === "TAKEN").length;
-
-  const missed =
-    summary?.missedDoses ??
-    doses.filter((dose) => getDoseStatus(dose) === "MISSED").length;
-
-  const skipped =
-    summary?.skippedDoses ??
-    doses.filter((dose) => getDoseStatus(dose) === "SKIPPED").length;
-
-  const pending =
-    summary?.pendingDoses ??
-    doses.filter((dose) =>
-      ["PENDING", "SCHEDULED"].includes(getDoseStatus(dose)),
-    ).length;
-
-  const total = summary?.totalDoses ?? doses.length;
-
-  const calculatedPercentage = total > 0 ? (taken / total) * 100 : 0;
-
-  const percentage =
-    summary?.adherencePercentage ??
-    summary?.completionRate ??
-    calculatedPercentage;
-
+/**
+ * Presentation-only adherence summary.
+ *
+ * Counts and the adherence percentage are supplied by the backend summary
+ * endpoint. This component deliberately does not count dose statuses or
+ * calculate an adherence rate in the browser.
+ */
+function AdherenceStatistics({ summary }: AdherenceStatisticsProps) {
   const statistics = [
     {
       title: "Total doses",
-      value: total,
-      description: "Scheduled doses",
+      value: summary?.totalDoses?.toLocaleString() ?? "—",
+      description: "Reported by the adherence service",
       icon: ListChecks,
       iconClass: "bg-sky-50 text-sky-700",
     },
     {
       title: "Taken",
-      value: taken,
-      description: "Recorded as taken",
+      value: summary?.takenDoses?.toLocaleString() ?? "—",
+      description: "Reported as taken",
       icon: CheckCircle2,
       iconClass: "bg-emerald-50 text-emerald-700",
     },
     {
       title: "Missed",
-      value: missed,
-      description: "Recorded as missed",
+      value: summary?.missedDoses?.toLocaleString() ?? "—",
+      description: "Reported as missed",
       icon: XCircle,
       iconClass: "bg-rose-50 text-rose-700",
     },
     {
       title: "Pending",
-      value: pending,
-      description: "Awaiting action",
+      value: summary?.pendingDoses?.toLocaleString() ?? "—",
+      description: "Reported as pending",
       icon: Clock3,
       iconClass: "bg-amber-50 text-amber-700",
     },
@@ -116,9 +87,9 @@ function AdherenceStatistics({
       </div>
 
       <AdherenceProgress
-        percentage={percentage}
+        percentage={summary?.adherencePercentage}
         label="Overall adherence"
-        description="Calculated from the available medication dose records."
+        description="Percentage returned by the adherence service."
       />
 
       <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
@@ -126,14 +97,21 @@ function AdherenceStatistics({
 
         <div>
           <p className="text-sm font-semibold text-foreground">
-            Skipped doses: {skipped}
+            Skipped doses: {summary?.skippedDoses?.toLocaleString() ?? "—"}
           </p>
 
           <p className="text-xs text-muted-foreground">
-            Doses explicitly recorded as skipped.
+            Count supplied by the adherence service.
           </p>
         </div>
       </div>
+
+      {!summary && (
+        <p className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+          No adherence summary was returned. Statistics are not estimated from
+          individual dose records in the browser.
+        </p>
+      )}
     </div>
   );
 }
