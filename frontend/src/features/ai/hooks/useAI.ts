@@ -61,14 +61,18 @@ export function useAI() {
     },
   });
 
+  /**
+   * Submit a task and optional user content. Analysis instructions and
+   * business rules are resolved by the backend task handler.
+   */
   const runTextAnalysis = (
     task: AITask,
-    prompt: string,
+    input?: string,
     context?: Record<string, unknown>,
   ) => {
     return textAnalysisMutation.mutateAsync({
       task,
-      prompt,
+      input,
       context,
     });
   };
