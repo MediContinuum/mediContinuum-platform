@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.procurement.controller;
+package com.medicontinuum.backend.procurement.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

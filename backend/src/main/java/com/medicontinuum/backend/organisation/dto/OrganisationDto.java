@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.organisation.dto;
+package com.medicontinuum.backend.organisation.dto;
 
 public class OrganisationDto {
 }

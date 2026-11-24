@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.doctor.entity;
+package com.medicontinuum.backend.doctor.entity;
 
 public class Doctor {
 }

@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.adherence.repository;
+package com.medicontinuum.backend.adherence.repository;
 
 import org.springframework.stereotype.Repository;
 

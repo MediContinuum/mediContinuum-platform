@@ -1,13 +1,29 @@
-﻿package com.medicontinuum.backend.user.entity;
 
-import com.medicontinuum.user.enums.UserRole;
-import com.medicontinuum.user.enums.UserStatus;
-import jakarta.persistence.*;
+package com.medicontinuum.backend.user.entity;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+
+import com.medicontinuum.backend.user.enums.UserRole;
+import com.medicontinuum.backend.user.enums.UserStatus;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(
@@ -29,13 +45,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "global_user_id", nullable = false, unique = true, length = 16)
+    @Column(name = "global_user_id", nullable = false, length = 16)
     private String globalUserId;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(nullable = false, unique = true, length = 150)
+    @Column(nullable = false, length = 150)
     private String email;
 
     @Column(name = "phone_number", length = 20)
@@ -69,6 +85,7 @@ public class User {
     @PrePersist
     protected void onCreate() {
         LocalDateTime now = LocalDateTime.now();
+
         createdAt = now;
         updatedAt = now;
 

@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.organisation.repository;
+package com.medicontinuum.backend.organisation.repository;
 
 import org.springframework.stereotype.Repository;
 

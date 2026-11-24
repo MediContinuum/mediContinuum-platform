@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.prescription.dto;
+package com.medicontinuum.backend.prescription.dto;
 
 public class PrescriptionDto {
 }

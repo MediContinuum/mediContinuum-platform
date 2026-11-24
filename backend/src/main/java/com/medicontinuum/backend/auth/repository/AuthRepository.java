@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.auth.repository;
+package com.medicontinuum.backend.auth.repository;
 
 import org.springframework.stereotype.Repository;
 

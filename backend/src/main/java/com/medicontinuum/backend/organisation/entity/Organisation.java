@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.organisation.entity;
+package com.medicontinuum.backend.organisation.entity;
 
 public class Organisation {
 }

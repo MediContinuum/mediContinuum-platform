@@ -1,8 +1,8 @@
-package com.medicontinuum.user.service;
-
-import org.springframework.stereotype.Component;
+package com.medicontinuum.backend.user.service;
 
 import java.security.SecureRandom;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class GlobalUserIdGenerator {

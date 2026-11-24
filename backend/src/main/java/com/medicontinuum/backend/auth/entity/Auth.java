@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.auth.entity;
+package com.medicontinuum.backend.auth.entity;
 
 public class Auth {
 }

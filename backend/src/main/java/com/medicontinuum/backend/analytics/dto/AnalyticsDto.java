@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.analytics.dto;
+package com.medicontinuum.backend.analytics.dto;
 
 public class AnalyticsDto {
 }

@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.organisation.service;
+package com.medicontinuum.backend.organisation.service;
 
 import org.springframework.stereotype.Service;
 

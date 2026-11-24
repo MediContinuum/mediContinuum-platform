@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.prescription.repository;
+package com.medicontinuum.backend.prescription.repository;
 
 import org.springframework.stereotype.Repository;
 

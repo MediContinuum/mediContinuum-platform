@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.adherence.entity;
+package com.medicontinuum.backend.adherence.entity;
 
 public class Adherence {
 }

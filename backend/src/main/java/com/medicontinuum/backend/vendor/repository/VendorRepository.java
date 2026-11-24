@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.vendor.repository;
+package com.medicontinuum.backend.vendor.repository;
 
 import org.springframework.stereotype.Repository;
 

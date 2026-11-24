@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.inventory.service;
+package com.medicontinuum.backend.inventory.service;
 
 import org.springframework.stereotype.Service;
 

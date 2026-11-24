@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.adherence.service;
+package com.medicontinuum.backend.adherence.service;
 
 import org.springframework.stereotype.Service;
 

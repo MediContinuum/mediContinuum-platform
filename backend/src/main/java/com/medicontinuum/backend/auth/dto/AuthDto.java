@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.auth.dto;
+package com.medicontinuum.backend.auth.dto;
 
 public class AuthDto {
 }

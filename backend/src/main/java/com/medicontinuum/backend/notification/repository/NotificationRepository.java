@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.notification.repository;
+package com.medicontinuum.backend.notification.repository;
 
 import org.springframework.stereotype.Repository;
 

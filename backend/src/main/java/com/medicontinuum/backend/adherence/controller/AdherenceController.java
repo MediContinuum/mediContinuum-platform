@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.adherence.controller;
+package com.medicontinuum.backend.adherence.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

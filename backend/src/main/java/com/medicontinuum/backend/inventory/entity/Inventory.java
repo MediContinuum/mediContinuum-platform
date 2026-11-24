@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.inventory.entity;
+package com.medicontinuum.backend.inventory.entity;
 
 public class Inventory {
 }

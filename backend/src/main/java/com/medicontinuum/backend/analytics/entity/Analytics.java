@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.analytics.entity;
+package com.medicontinuum.backend.analytics.entity;
 
 public class Analytics {
 }

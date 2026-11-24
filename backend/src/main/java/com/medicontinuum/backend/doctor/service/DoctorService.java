@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.doctor.service;
+package com.medicontinuum.backend.doctor.service;
 
 import org.springframework.stereotype.Service;
 

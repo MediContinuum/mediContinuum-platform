@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.appointment.repository;
+package com.medicontinuum.backend.appointment.repository;
 
 import org.springframework.stereotype.Repository;
 

@@ -1,4 +1,4 @@
-﻿package com.medicontinuum.backend.analytics.repository;
+package com.medicontinuum.backend.analytics.repository;
 
 import org.springframework.stereotype.Repository;
 
