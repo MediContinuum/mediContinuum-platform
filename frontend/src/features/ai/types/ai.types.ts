@@ -35,9 +35,10 @@ export interface AIAnalysisResult {
   disclaimer?: string;
 }
 
+/** Browser request shape: the backend owns task instructions and analysis rules. */
 export interface AIAnalysisRequest {
   task: AITask;
-  prompt: string;
+  input?: string;
   context?: Record<string, unknown>;
 }
 
