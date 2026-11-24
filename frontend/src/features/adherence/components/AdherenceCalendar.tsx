@@ -22,6 +22,11 @@ function toDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Browser-only calendar presentation. It groups API-provided dose rows by
+ * their scheduled date for display; it does not calculate adherence metrics
+ * or infer missing dose statuses.
+ */
 function AdherenceCalendar({
   doses,
   selectedDate,
