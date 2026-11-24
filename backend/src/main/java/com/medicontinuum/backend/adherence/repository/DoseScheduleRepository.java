@@ -27,6 +27,11 @@ public interface DoseScheduleRepository
         OffsetDateTime to
     );
 
+    List<DoseSchedule> findTop100ByStatusAndScheduledAtBeforeOrderByScheduledAtAsc(
+        DoseStatus status,
+        OffsetDateTime cutoff
+    );
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
         UPDATE DoseSchedule d
