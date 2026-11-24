@@ -44,31 +44,23 @@ function AIInsightsPage() {
   );
 
   async function generateAdherenceInsights() {
-    await runTextAnalysis(
-      "ADHERENCE_INSIGHTS",
-      "Analyse the authorised medication adherence records available to this user. Summarise recorded patterns, missing records and items that may need human review. Do not diagnose or change prescribed medication.",
-    );
+    // The server resolves the task's analysis policy and accesses authorised data.
+    await runTextAnalysis("ADHERENCE_INSIGHTS");
   }
 
   async function runAnomalyDetection() {
-    await runTextAnalysis(
-      "ANOMALY_DETECTION",
-      "Review the authorised healthcare activity data available to this user for unusual patterns. Return evidence-based observations for human review. Do not label a person as non-compliant or diagnose a condition.",
-    );
+    // Anomaly-detection rules and evidence checks are backend responsibilities.
+    await runTextAnalysis("ANOMALY_DETECTION");
   }
 
   async function analyseMedicationText(text: string) {
-    await runTextAnalysis(
-      "TEXT_MEDICATION_UPDATE",
-      `Analyse this user-provided medication update and identify the information that may need verification. Do not record a dose or alter any prescription: ${text}`,
-    );
+    // Only user-entered content is sent; the backend owns prompt and validation rules.
+    await runTextAnalysis("TEXT_MEDICATION_UPDATE", text);
   }
 
   async function analyseVoiceTranscript(transcript: string) {
-    await runTextAnalysis(
-      "VOICE_MEDICATION_UPDATE",
-      `Analyse this voice transcription as a draft medication update. Extract potentially relevant medication details, flag ambiguity and require confirmation. Do not write to a medical record: ${transcript}`,
-    );
+    // The transcription is user input, not an instruction for the model.
+    await runTextAnalysis("VOICE_MEDICATION_UPDATE", transcript);
   }
 
   const currentError = getErrorMessage(error);
