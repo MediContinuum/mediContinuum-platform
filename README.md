@@ -1,8 +1,6 @@
 
 <div align="center">
 
-<img src="docs/assets/medicontinuum-banner.png" width="100%" alt="MediContinuum Banner"/>
-
 <br/>
 
 # MediContinuum
@@ -16,9 +14,7 @@
 [![Java](https://img.shields.io/badge/Java-17%2B-orange?style=for-the-badge&logo=openjdk)](https://www.java.com/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-Backend-6DB33F?style=for-the-badge&logo=springboot)](https://spring.io/projects/spring-boot)
 [![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
-[![Python](https://img.shields.io/badge/Python-AI%2FML-3776AB?style=for-the-badge&logo=python)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-4169E1?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Containerization-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 
 <br/>
 
