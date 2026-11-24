@@ -1,16 +1,61 @@
-# React + Vite
+# MediContinuum Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend is a browser application built with React, TypeScript, Vite, React Router, and TanStack Query.
 
-Currently, two official plugins are available:
+## Frontend/backend boundary
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The `frontend/` directory contains presentation and browser-side application code only:
 
-## React Compiler
+- Pages, layouts, reusable UI components, navigation, and responsive styling.
+- Form state and client-side validation for a good user experience.
+- Browser state, query caching, loading/error states, and display formatting.
+- HTTP request adapters that call the Spring Boot API.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The files in `src/services/` are **frontend API clients**, not backend services. They send HTTP requests through `src/lib/axios.ts` and translate API responses into data the UI can display. Keep these adapters in the frontend; deleting them would disconnect the UI from the backend.
 
-## Expanding the ESLint configuration
+The backend remains responsible for all authoritative operations, including authentication, authorization, permission enforcement, business rules, validation of incoming requests, database access, transactions, scheduling, and sensitive processing. Frontend role checks and form validation are for presentation and usability only; they are never a security boundary.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Do not add Spring controllers, repositories, JPA entities, database drivers, SQL/JDBC access, server credentials, or backend business workflows to this directory. Implement those in `backend/` (or the appropriate server-side module) and expose them through an API.
+
+## Source layout
+
+| Path | Purpose |
+| --- | --- |
+| `src/app/` | App bootstrap, providers, routing |
+| `src/components/` | Shared UI and layout components |
+| `src/features/` | Feature-specific pages, components, and browser hooks |
+| `src/hooks/` | Reusable React hooks |
+| `src/lib/axios.ts` | Shared HTTP client for backend API requests |
+| `src/services/` | Frontend API request adapters |
+| `src/schemas/` | Client-side form/input schemas |
+| `src/store/` | Browser-side state |
+| `src/styles/`, `src/index.css` | Frontend styling |
+| `src/types/` | TypeScript API and UI data contracts |
+| `src/utils/` | Formatting and client-side helpers |
+
+## Environment configuration
+
+Copy `.env.example` to `.env` and adjust the local values when needed.
+
+- `VITE_API_BASE_URL` is the API path used by the browser (default: `/api`).
+- `VITE_API_PROXY_TARGET` is the local Spring Boot server used by the Vite development proxy (default: `http://localhost:8080`).
+
+**Every variable prefixed with `VITE_` is exposed to the browser bundle. Never put database passwords, private API keys, signing secrets, or other server credentials in frontend environment variables.** Keep the real local `.env` file untracked; commit only `.env.example` with safe placeholders.
+
+## Development
+
+Requirements: Node.js `>=22.12.0` and npm `>=10.9.0`.
+
+```bash
+npm install
+npm run dev
+```
+
+Useful checks:
+
+```bash
+npm run typecheck
+npm run lint
+npm run test:run
+npm run build
+```
