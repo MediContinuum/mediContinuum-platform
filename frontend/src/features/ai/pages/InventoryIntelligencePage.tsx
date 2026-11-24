@@ -27,17 +27,13 @@ function InventoryIntelligencePage() {
   }));
 
   async function analyseInventory() {
-    await runTextAnalysis(
-      "INVENTORY_INSIGHTS",
-      "Analyse the authorised inventory records available to this user. Highlight stock levels, expiry-related observations and unusual patterns only where supported by supplied data. Do not invent quantities or recommend clinical substitutions.",
-    );
+    // The backend selects the inventory analysis policy and authorised data.
+    await runTextAnalysis("INVENTORY_INSIGHTS");
   }
 
   async function detectInventoryAnomalies() {
-    await runTextAnalysis(
-      "ANOMALY_DETECTION",
-      "Review authorised medicine inventory activity for unusual stock or transaction patterns. Return observations supported by data and indicate where human review is necessary.",
-    );
+    // Detection thresholds, evidence checks, and recommendations are server-owned.
+    await runTextAnalysis("ANOMALY_DETECTION");
   }
 
   const errorMessage =
