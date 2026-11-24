@@ -5,5 +5,7 @@ public enum ConnectionStatus {
     PENDING,
     ACCEPTED,
     REJECTED,
-    BLOCKED
+    BLOCKED,
+    CANCELLED,
+    REMOVED
 }

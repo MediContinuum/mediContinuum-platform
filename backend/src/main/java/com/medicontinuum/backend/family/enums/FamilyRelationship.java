@@ -8,6 +8,10 @@ public enum FamilyRelationship {
     SIBLING,
     GRANDPARENT,
     GRANDCHILD,
+    UNCLE,
+    AUNT,
+    COUSIN,
     RELATIVE,
     OTHER
+
 }
