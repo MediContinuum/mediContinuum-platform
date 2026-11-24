@@ -14,7 +14,7 @@ The backend stores in-app notifications in PostgreSQL. Email is optional and is 
 
 ## Gmail SMTP setup (local development)
 
-Google currently requires 2-Step Verification before an App Password can be created. Google also recommends using Sign in with Google where the integration supports it. See [Google's App Password documentation](https://support.google.com/mail/answer/185833) and [2-Step Verification setup](https://support.google.com/mail/answer/185839).
+Google currently requires 2-Step Verification before an App Password can be created. Google also recommends using Sign in with Google where the integration supports it. See [Google's App Password documentation](https://support.google.com/accounts/answer/185833) and [2-Step Verification setup](https://support.google.com/accounts/answer/185839).
 
 1. Use a dedicated sender mailbox for the application.
 2. Enable 2-Step Verification for that Google account.
