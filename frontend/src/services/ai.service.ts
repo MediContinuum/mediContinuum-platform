@@ -30,8 +30,10 @@ const FEATURE_AI_ENDPOINTS: Record<AITask, string> = {
 };
 
 export interface FeatureAITextRequest {
+  /** Task identifier interpreted by the backend's registered task handler. */
   task: AITask;
-  prompt: string;
+  /** Optional user-provided text; never a prompt or set of business instructions. */
+  input?: string;
   context?: Record<string, unknown>;
 }
 
@@ -102,8 +104,9 @@ export const aiService = {
   },
 
   /**
-   * Send a text-analysis request to the backend and return its result.
-   * The frontend does not execute AI instructions or calculate insights.
+   * Send a task identifier and optional user input to the backend.
+   * Task prompts, analysis policies, data access, and result generation must
+   * live on the server; the browser must not author or execute those rules.
    */
   generateFeatureAnalysis: async (
     request: FeatureAITextRequest,
@@ -112,7 +115,7 @@ export const aiService = {
       FEATURE_AI_ENDPOINTS[request.task],
       {
         task: request.task,
-        prompt: request.prompt,
+        input: request.input,
         context: request.context ?? {},
       },
     );
