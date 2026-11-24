@@ -18,7 +18,7 @@ Google currently requires 2-Step Verification before an App Password can be crea
 
 1. Use a dedicated sender mailbox for the application.
 2. Enable 2-Step Verification for that Google account.
-3. Open the Google Account App Passwords page and create an App Password for this application. Copy the generated 16-character password. Do not use your normal Gmail password.
+3. Open the Google Account App Passwords page and create an App Password for this application. Copy the generated 16-digit App Password. Do not use your normal Gmail password.
 4. Set the environment variables in the same terminal that will start Spring Boot:
 
 ```bash
