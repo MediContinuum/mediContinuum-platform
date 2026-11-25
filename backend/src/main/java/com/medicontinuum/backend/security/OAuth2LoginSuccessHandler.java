@@ -22,8 +22,9 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
-    private final OAuth2LoginService oauth2LoginService;
     private static final Logger log = LoggerFactory.getLogger(OAuth2LoginSuccessHandler.class);
+
+    private final OAuth2LoginService oauth2LoginService;
     private final ObjectMapper objectMapper;
     private final MeterRegistry meterRegistry;
 
@@ -68,7 +69,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json");
             response.setHeader("Cache-Control", "no-store");
-            response.getWriter().write("{\\"success\\":false,\\"message\\":\\"Google account sign-in was rejected.\\"}");
+            response.getWriter().write("{\"success\":false,\"message\":\"Google account sign-in was rejected.\"}");
         }
     }
 }
