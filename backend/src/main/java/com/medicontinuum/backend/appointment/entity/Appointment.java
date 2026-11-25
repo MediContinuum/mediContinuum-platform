@@ -30,10 +30,10 @@ public class Appointment {
     @Column(name="end_at",nullable=false) private LocalDateTime endAt;
     @Column(length=500) private String reason;
     @Column(length=2000) private String notes;
-    @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private AppointmentStatus status=AppointmentStatus.REQUESTED;
+    @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private AppointmentStatus status=AppointmentStatus.SCHEDULED;
     @Enumerated(EnumType.STRING) @Column(nullable=false,length=20) private AppointmentType type=AppointmentType.IN_PERSON;
     @Column(name="created_at",nullable=false,updatable=false) private LocalDateTime createdAt;
     @Column(name="updated_at",nullable=false) private LocalDateTime updatedAt;
-    @PrePersist void onCreate(){LocalDateTime now=LocalDateTime.now();createdAt=now;updatedAt=now;if(status==null)status=AppointmentStatus.REQUESTED;if(type==null)type=AppointmentType.IN_PERSON;}
+    @PrePersist void onCreate(){LocalDateTime now=LocalDateTime.now();createdAt=now;updatedAt=now;if(status==null)status=AppointmentStatus.SCHEDULED;if(type==null)type=AppointmentType.IN_PERSON;}
     @PreUpdate void onUpdate(){updatedAt=LocalDateTime.now();}
 }

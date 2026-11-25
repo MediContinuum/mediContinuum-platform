@@ -295,7 +295,7 @@ public class AdherenceServiceImpl implements AdherenceService {
         Patient patient = findPatientForUser(currentUserEmail);
 
         DoseSchedule schedule = doseScheduleRepository
-            .findById(doseScheduleId)
+            .findByIdForUpdate(doseScheduleId)
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "Dose schedule not found"

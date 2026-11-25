@@ -16,6 +16,7 @@ import com.medicontinuum.backend.doctor.entity.Doctor;
 import com.medicontinuum.backend.doctor.enums.DoctorStatus;
 import com.medicontinuum.backend.doctor.repository.DoctorRepository;
 import com.medicontinuum.backend.organisation.entity.Organisation;
+import com.medicontinuum.backend.organisation.entity.OrganisationMembership;
 import com.medicontinuum.backend.organisation.enums.*;
 import com.medicontinuum.backend.organisation.repository.*;
 import com.medicontinuum.backend.patient.entity.Patient;

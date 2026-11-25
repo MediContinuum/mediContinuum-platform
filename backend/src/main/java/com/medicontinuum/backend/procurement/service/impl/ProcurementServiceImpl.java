@@ -11,6 +11,7 @@ import com.medicontinuum.backend.medicine.entity.Medicine;
 import com.medicontinuum.backend.medicine.enums.MedicineStatus;
 import com.medicontinuum.backend.medicine.repository.MedicineRepository;
 import com.medicontinuum.backend.organisation.entity.Organisation;
+import com.medicontinuum.backend.organisation.entity.OrganisationMembership;
 import com.medicontinuum.backend.organisation.enums.*;
 import com.medicontinuum.backend.organisation.repository.*;
 import com.medicontinuum.backend.organisationstock.service.OrganisationStockService;
