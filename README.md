@@ -413,7 +413,15 @@ main
 | Member 4 | AI/ML Engineering |
 
 ---
+## 🚀 Future Roadmap
 
+- [ ] AI-powered medication assistant
+- [ ] Prescription OCR integration
+- [ ] Smart refill prediction
+- [ ] Medicine interaction alerts
+- [ ] Mobile application
+- [ ] Notification and reminder system
+- [ ] Advanced analytics dashboard
 
 ## 🌍 Real-World Impact
 
