@@ -37,6 +37,7 @@ import com.medicontinuum.backend.prescription.repository.PrescriptionRepository;
 import com.medicontinuum.backend.user.entity.User;
 import com.medicontinuum.backend.user.repository.UserRepository;
 import com.medicontinuum.backend.notification.service.NotificationService;
+import com.medicontinuum.backend.inventory.service.InventoryService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -50,6 +51,7 @@ public class AdherenceServiceImpl implements AdherenceService {
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final InventoryService inventoryService;
 
     @Value("${adherence.missed-grace-hours:2}")
     private long missedGraceHours;
@@ -293,7 +295,7 @@ public class AdherenceServiceImpl implements AdherenceService {
         Patient patient = findPatientForUser(currentUserEmail);
 
         DoseSchedule schedule = doseScheduleRepository
-            .findById(doseScheduleId)
+            .findByIdForUpdate(doseScheduleId)
             .orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "Dose schedule not found"
@@ -334,6 +336,10 @@ public class AdherenceServiceImpl implements AdherenceService {
         schedule.setPatientNote(trimToNull(patientNote));
 
         DoseSchedule saved = doseScheduleRepository.save(schedule);
+
+        if (status == DoseStatus.TAKEN) {
+            inventoryService.consumeDoseForSchedule(currentUserEmail, saved.getId());
+        }
 
         return toResponse(saved);
     }

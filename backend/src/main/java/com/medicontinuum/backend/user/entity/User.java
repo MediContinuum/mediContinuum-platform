@@ -28,7 +28,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(
@@ -46,7 +45,6 @@ import lombok.ToString;
 )
 @Getter
 @Setter 
-@ToString 
 @AllArgsConstructor 
 @RequiredArgsConstructor 
 public class User {
@@ -85,6 +83,9 @@ public class User {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "token_version", nullable = false, columnDefinition = "integer default 0")
+    private int tokenVersion;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;

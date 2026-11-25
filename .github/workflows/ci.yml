@@ -2,7 +2,7 @@ name: Build and test
 
 on:
   push:
-    branches: [main, "feature/**", "fix/**"]
+    branches: [main, "feature/**", "fix/**", "other-features"]
   pull_request:
     branches: [main]
 
@@ -46,6 +46,8 @@ jobs:
           DB_USERNAME: medicontinuum
           DB_PASSWORD: medicontinuum_ci
           DDL_AUTO: update
+          JWT_SECRET: "CI-only-secret-not-for-production-0123456789abcdef"
+          CORS_ALLOWED_ORIGINS: http://localhost:5173
           NOTIFICATION_EMAIL_ENABLED: "false"
         run: ./mvnw -B verify
 

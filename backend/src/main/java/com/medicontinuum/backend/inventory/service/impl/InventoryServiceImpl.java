@@ -23,6 +23,12 @@ import com.medicontinuum.backend.inventory.dto.UpdateStockThresholdRequest;
 import com.medicontinuum.backend.inventory.entity.InventoryBatch;
 import com.medicontinuum.backend.inventory.entity.InventoryItem;
 import com.medicontinuum.backend.inventory.entity.InventoryTransaction;
+import com.medicontinuum.backend.inventory.entity.DoseInventoryConsumption;
+import com.medicontinuum.backend.inventory.repository.DoseInventoryConsumptionRepository;
+import com.medicontinuum.backend.adherence.entity.DoseSchedule;
+import com.medicontinuum.backend.adherence.enums.DoseStatus;
+import com.medicontinuum.backend.adherence.repository.DoseScheduleRepository;
+import com.medicontinuum.backend.prescription.entity.PrescriptionItem;
 import com.medicontinuum.backend.inventory.enums.InventoryTransactionType;
 import com.medicontinuum.backend.inventory.repository.InventoryBatchRepository;
 import com.medicontinuum.backend.inventory.repository.InventoryItemRepository;
@@ -47,6 +53,8 @@ public class InventoryServiceImpl implements InventoryService {
     private final InventoryItemRepository inventoryItemRepository;
     private final InventoryBatchRepository inventoryBatchRepository;
     private final InventoryTransactionRepository inventoryTransactionRepository;
+    private final DoseInventoryConsumptionRepository doseInventoryConsumptionRepository;
+    private final DoseScheduleRepository doseScheduleRepository;
 
     private final PatientRepository patientRepository;
     private final MedicineRepository medicineRepository;
@@ -253,7 +261,7 @@ public class InventoryServiceImpl implements InventoryService {
 
         Patient patient = findPatientByEmail(currentUserEmail);
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         LocalDate expiryLimit = today.plusDays(withinDays);
 
         return inventoryItemRepository
@@ -295,7 +303,7 @@ public class InventoryServiceImpl implements InventoryService {
             );
         }
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
 
         List<InventoryBatch> batches =
             inventoryBatchRepository.findUsableBatchesForUpdate(
@@ -355,6 +363,71 @@ public class InventoryServiceImpl implements InventoryService {
         InventoryResponse response = toInventoryResponse(item);
         notifyIfLowStock(item, response);
         return response;
+    }
+
+    // Deduct the prescribed amount only once when the patient confirms a dose.
+    // The locked dose row and unique consumption row prevent duplicate deductions on retries.
+    @Override
+    public void consumeDoseForSchedule(String currentUserEmail, UUID doseScheduleId) {
+        DoseSchedule schedule = doseScheduleRepository.findByIdForUpdate(doseScheduleId)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Dose schedule not found"
+            ));
+
+        if (schedule.getStatus() != DoseStatus.TAKEN) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT, "Only a TAKEN dose can consume inventory"
+            );
+        }
+        User currentUser = findUserByEmail(currentUserEmail);
+        Patient patient = schedule.getPrescriptionItem().getPrescription().getPatient();
+        if (!patient.getUser().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "You cannot consume another patient's inventory"
+            );
+        }
+        if (doseInventoryConsumptionRepository.existsByDoseSchedule_Id(doseScheduleId)) {
+            return;
+        }
+
+        PrescriptionItem prescriptionItem = schedule.getPrescriptionItem();
+        InventoryItem inventoryItem = inventoryItemRepository
+            .findByPatient_IdAndMedicine_Id(patient.getId(), prescriptionItem.getMedicine().getId())
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.CONFLICT, "No patient inventory exists for this prescribed medicine"
+            ));
+
+        String prescribedUnit = normalizeUnit(prescriptionItem.getDosageUnit());
+        String stockUnit = normalizeUnit(inventoryItem.getStockUnit());
+        if (!prescribedUnit.equals(stockUnit)) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "Cannot safely deduct this dose: prescription unit '" + prescriptionItem.getDosageUnit()
+                    + "' does not match inventory unit '" + inventoryItem.getStockUnit() + "'"
+            );
+        }
+
+        BigDecimal quantity = prescriptionItem.getDosageAmount();
+        if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Prescription dose quantity is invalid");
+        }
+
+        consumeStock(
+            currentUserEmail,
+            inventoryItem.getId(),
+            new ConsumeStockRequest(
+                quantity,
+                inventoryItem.getStockUnit(),
+                "Automatic deduction for confirmed dose " + doseScheduleId
+            )
+        );
+
+        DoseInventoryConsumption consumption = new DoseInventoryConsumption();
+        consumption.setDoseSchedule(schedule);
+        consumption.setInventoryItem(inventoryItem);
+        consumption.setQuantity(quantity);
+        consumption.setUnit(inventoryItem.getStockUnit());
+        doseInventoryConsumptionRepository.save(consumption);
     }
 
     // ---------------------------------------------------------
@@ -448,16 +521,28 @@ public class InventoryServiceImpl implements InventoryService {
             .filter(InventoryResponse::lowStock)
             .count();
 
-        BigDecimal totalAvailable = inventory.stream()
-            .map(InventoryResponse::availableQuantity)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        java.util.Map<String, BigDecimal> quantityByUnit = inventory.stream()
+            .collect(java.util.stream.Collectors.groupingBy(
+                item -> item.stockUnit().trim().toUpperCase(java.util.Locale.ROOT),
+                java.util.TreeMap::new,
+                java.util.stream.Collectors.reducing(
+                    BigDecimal.ZERO,
+                    InventoryResponse::availableQuantity,
+                    BigDecimal::add
+                )
+            ));
+
+        // A single scalar total is meaningful only when all items use the same unit.
+        BigDecimal totalAvailable = quantityByUnit.size() == 1
+            ? quantityByUnit.values().iterator().next()
+            : null;
 
         long expiringBatchCount = inventory.stream()
             .flatMap(item -> item.batches().stream())
             .filter(batch ->
                 batch.quantityRemaining().compareTo(BigDecimal.ZERO) > 0 &&
-                !batch.expiryDate().isBefore(LocalDate.now()) &&
-                !batch.expiryDate().isAfter(LocalDate.now().plusDays(30))
+                !batch.expiryDate().isBefore(today()) &&
+                !batch.expiryDate().isAfter(today().plusDays(30))
             )
             .count();
 
@@ -465,7 +550,8 @@ public class InventoryServiceImpl implements InventoryService {
             totalMedicineTypes,
             lowStockCount,
             totalAvailable,
-            expiringBatchCount
+            expiringBatchCount,
+            quantityByUnit
         );
     }
 
@@ -478,7 +564,7 @@ public class InventoryServiceImpl implements InventoryService {
 
         List<InventoryBatch> expiredBatches =
             inventoryBatchRepository.findExpiredBatchesForUpdate(
-                LocalDate.now()
+                today()
             );
 
         int expiredCount = 0;
@@ -530,7 +616,7 @@ public class InventoryServiceImpl implements InventoryService {
             );
         }
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         LocalDate expiryLimit = today.plusDays(withinDays);
 
         List<InventoryBatch> expiringBatches =
@@ -652,7 +738,7 @@ public class InventoryServiceImpl implements InventoryService {
         InventoryItem item
     ) {
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
 
         List<InventoryBatch> batches =
             inventoryBatchRepository
@@ -746,7 +832,16 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     private String normalizeUnit(String value) {
-        return value.trim().toUpperCase();
+        String unit = value.trim().toUpperCase(java.util.Locale.ROOT);
+        return switch (unit) {
+            case "TABLETS", "TAB", "TABS" -> "TABLET";
+            case "CAPSULES", "CAP", "CAPS" -> "CAPSULE";
+            case "MILLILITER", "MILLILITERS", "MILLILITRE", "MILLILITRES" -> "ML";
+            case "MILLIGRAM", "MILLIGRAMS" -> "MG";
+            case "MICROGRAM", "MICROGRAMS" -> "MCG";
+            case "DROPS" -> "DROP";
+            default -> unit;
+        };
     }
 
     private String trimToNull(String value) {

@@ -1,0 +1,2 @@
+package com.medicontinuum.backend.appointment.enums;
+public enum AppointmentStatus { SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW }

@@ -63,4 +63,6 @@ public interface InventoryService {
     int expireOldBatches();
 
     int notifyExpiringBatches(int withinDays);
+
+    void consumeDoseForSchedule(String currentUserEmail, UUID doseScheduleId);
 }
