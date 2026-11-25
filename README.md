@@ -12,6 +12,22 @@
 **Connecting Patients • Empowering Families • Transforming Healthcare**
 
 
+
+## 🎥 Project Demo
+
+<p align="center">
+  <a href="https://youtu.be/jfIDNTt7MX0">
+    <img src="https://img.youtube.com/vi/jfIDNTt7MX0/maxresdefault.jpg"
+         alt="MediContinuum Project Demo"
+         width="800">
+  </a>
+</p>
+
+<p align="center">
+  <b>▶ Watch MediContinuum Project Demo</b>
+</p>
+
+
 <br/>
 
 [![Java](https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=openjdk)](https://www.java.com/)
