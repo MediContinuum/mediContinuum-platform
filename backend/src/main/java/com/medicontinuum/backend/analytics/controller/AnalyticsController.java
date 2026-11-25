@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class AnalyticsController{
     private final AnalyticsService service;
     @GetMapping("/dashboard") @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<DashboardAnalytics> dashboard(Authentication a,@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate fromDate,@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate toDate){return ResponseEntity.ok(service.dashboard(a.getName(),fromDate,toDate));}
+    public ResponseEntity<DashboardAnalytics> dashboard(Authentication a,@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate fromDate,@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate toDate,@RequestParam(required=false) UUID organisationId){return ResponseEntity.ok(service.dashboard(a.getName(),fromDate,toDate,organisationId));}
     @GetMapping("/patients/{patientId}") @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PatientAnalytics> patient(Authentication a,@PathVariable UUID patientId,@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate fromDate,@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate toDate){return ResponseEntity.ok(service.patient(a.getName(),patientId,fromDate,toDate));}
     @GetMapping("/inventory") @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<InventoryAnalytics> inventory(Authentication a,@RequestParam(defaultValue="30d") String period){return ResponseEntity.ok(service.inventory(a.getName(),period));}
+    public ResponseEntity<InventoryAnalytics> inventory(Authentication a,@RequestParam(defaultValue="30d") String period,@RequestParam(required=false) UUID organisationId){return ResponseEntity.ok(service.inventory(a.getName(),period,organisationId));}
     @GetMapping("/adherence") @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AdherenceAnalytics> adherence(Authentication a,@RequestParam(defaultValue="30d") String period){return ResponseEntity.ok(service.adherence(a.getName(),period));}
     @GetMapping("/consumption") @PreAuthorize("isAuthenticated()")

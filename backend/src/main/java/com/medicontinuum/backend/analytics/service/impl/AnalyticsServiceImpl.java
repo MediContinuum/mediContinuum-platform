@@ -63,11 +63,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private String appTimeZone;
 
     @Override
-    public DashboardAnalytics dashboard(String email, LocalDate fromDate, LocalDate toDate) {
+    public DashboardAnalytics dashboard(String email, LocalDate fromDate, LocalDate toDate, UUID organisationId) {
         User actor=activeUser(email);
         PeriodRange range=explicitRange(fromDate,toDate);
         Optional<Patient> patient=patients.findByUser_Id(actor.getId());
-        if(patient.isPresent()){
+        if(patient.isPresent() && organisationId == null){
             List<Appointment> patientAppointments=appointments.findByPatient_IdAndStartAtBetweenOrderByStartAtAsc(patient.get().getId(),range.from().atStartOfDay(),range.to().plusDays(1).atStartOfDay());
             List<DoseSchedule> doses=findDoses(patient.get().getId(),range);
             long taken=doses.stream().filter(d->d.getStatus()==DoseStatus.TAKEN).count();
@@ -79,7 +79,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                 List.of(new Category("Taken",taken,percentage(taken,Math.max(1,due))),new Category("Missed",doses.stream().filter(d->d.getStatus()==DoseStatus.MISSED).count(),percentage(doses.stream().filter(d->d.getStatus()==DoseStatus.MISSED).count(),Math.max(1,due))))
             );
         }
-        Organisation org=selectOrganisation(actor,null);
+        Organisation org=selectOrganisation(actor,organisationId);
         OrganisationAnalytics data=organisationData(org,range);
         ProcurementAnalytics procurement=procurementData(org,range);
         InventoryAnalytics inventory=organisationInventory(org,range);
@@ -107,11 +107,11 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     }
 
     @Override
-    public InventoryAnalytics inventory(String email,String period){
+    public InventoryAnalytics inventory(String email,String period,UUID organisationId){
         User actor=activeUser(email);PeriodRange range=periodRange(period);
         Optional<Patient> patient=patients.findByUser_Id(actor.getId());
-        if(patient.isPresent())return patientInventory(patient.get(),range);
-        return organisationInventory(selectOrganisation(actor,null),range);
+        if(patient.isPresent() && organisationId == null)return patientInventory(patient.get(),range);
+        return organisationInventory(selectOrganisation(actor,organisationId),range);
     }
 
     @Override

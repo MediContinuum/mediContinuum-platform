@@ -49,9 +49,9 @@ Google OAuth, email verification, refresh tokens and forgot-password/reset token
 ## Analytics
 
 Analytics is computed from current module data, not from a separate unmaintained analytics table.
-- `GET /api/analytics/dashboard?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD`
+- `GET /api/analytics/dashboard?fromDate=YYYY-MM-DD&toDate=YYYY-MM-DD&organisationId=UUID`
 - `GET /api/analytics/patients/{patientId}`
-- `GET /api/analytics/inventory?period=7d|30d|90d|12m`
+- `GET /api/analytics/inventory?period=7d|30d|90d|12m&organisationId=UUID`
 - `GET /api/analytics/adherence?period=...`
 - `GET /api/analytics/consumption?period=...`
 - `GET /api/analytics/forecast?period=...`
