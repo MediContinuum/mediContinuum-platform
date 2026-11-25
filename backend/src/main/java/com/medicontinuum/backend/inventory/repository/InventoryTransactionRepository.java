@@ -7,5 +7,6 @@ import com.medicontinuum.backend.inventory.entity.InventoryTransaction;
 import com.medicontinuum.backend.inventory.enums.InventoryTransactionType;
 public interface InventoryTransactionRepository extends JpaRepository<InventoryTransaction, UUID> {
     List<InventoryTransaction> findByInventoryItem_IdOrderByCreatedAtDesc(UUID inventoryItemId);
+    List<InventoryTransaction> findByInventoryItem_IdAndTransactionTypeAndCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtAsc(UUID inventoryItemId, InventoryTransactionType transactionType, LocalDateTime from, LocalDateTime to);
     List<InventoryTransaction> findByInventoryItem_Patient_IdAndTransactionTypeAndCreatedAtBetweenOrderByCreatedAtAsc(UUID patientId, InventoryTransactionType transactionType, LocalDateTime from, LocalDateTime to);
 }
