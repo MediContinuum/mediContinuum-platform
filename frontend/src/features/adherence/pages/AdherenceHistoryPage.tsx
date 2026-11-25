@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { History } from "lucide-react";
-
 import { useAdherence } from "../hooks/useAdherence";
 
 
