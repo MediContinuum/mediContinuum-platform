@@ -73,8 +73,8 @@ public class VendorServiceImpl implements VendorService {
         return accessible.get(0);
     }
     private void requireManager(User actor,Organisation org){
-        if(actor.getRoles().contains(com.medicontinuum.backend.user.enums.UserRole.PLATFORM_ADMIN))return;
         if(org.getStatus()!=OrganisationStatus.ACTIVE)throw conflict("Organisation is not active");
+        if(actor.getRoles().contains(com.medicontinuum.backend.user.enums.UserRole.PLATFORM_ADMIN))return;
         OrganisationMembership membership=memberships.findByOrganisation_IdAndUser_Id(org.getId(),actor.getId())
             .filter(m->m.getStatus()==OrganisationMemberStatus.ACTIVE&&allowedRole(m.getRole()))
             .orElseThrow(()->forbidden("Active organisation procurement permission is required"));

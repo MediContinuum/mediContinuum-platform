@@ -39,8 +39,10 @@ public class AppointmentServiceImpl implements AppointmentService{
     @Value("${app.time-zone:Asia/Kolkata}") private String appTimeZone;
 
     @Override public AppointmentResponse create(String email,AppointmentRequests.Create r){
-        User actor=activeUser(email);Patient patient=patients.findByIdForUpdate(r.patientId()).orElseThrow(()->notFound("Patient not found"));
+        User actor=activeUser(email);
+        // Lock doctor first, then patient; every booking/update uses this order to avoid lock inversion.
         Doctor doctor=doctors.findByIdForUpdate(r.doctorId()).filter(d->d.getStatus()==DoctorStatus.ACTIVE).orElseThrow(()->notFound("Active doctor profile not found"));
+        Patient patient=patients.findByIdForUpdate(r.patientId()).orElseThrow(()->notFound("Patient not found"));
         if(doctor.getUser().getStatus()!=UserStatus.ACTIVE||!doctor.getUser().getRoles().contains(UserRole.DOCTOR))throw conflict("Doctor account is not active");
         LocalDateTime start=LocalDateTime.of(r.appointmentDate(),r.startTime());LocalDateTime end=LocalDateTime.of(r.appointmentDate(),r.endTime());validateTime(start,end);
         Organisation org=null;
@@ -95,7 +97,7 @@ public class AppointmentServiceImpl implements AppointmentService{
         return toResponse(appointments.save(a));
     }
     @Override public AppointmentResponse updateStatus(String email,UUID id,AppointmentRequests.Status r){
-        User actor=activeUser(email);Appointment a=find(id);requireCanManage(actor,a);AppointmentStatus current=a.getStatus(),next=r.status();
+        User actor=activeUser(email);Appointment a=findForUpdate(id);requireCanManage(actor,a);AppointmentStatus current=a.getStatus(),next=r.status();
         if(current==AppointmentStatus.CANCELLED||current==AppointmentStatus.COMPLETED||current==AppointmentStatus.NO_SHOW)throw conflict("Appointment is already closed");
         boolean valid=(current==AppointmentStatus.SCHEDULED&&(next==AppointmentStatus.CONFIRMED||next==AppointmentStatus.CANCELLED))
             ||(current==AppointmentStatus.CONFIRMED&&(next==AppointmentStatus.COMPLETED||next==AppointmentStatus.CANCELLED||next==AppointmentStatus.NO_SHOW));

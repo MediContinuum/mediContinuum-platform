@@ -95,8 +95,8 @@ public class ProcurementServiceImpl implements ProcurementService{
     private Procurement findOrder(UUID id){return orders.findById(id).orElseThrow(()->notFound("Purchase order not found"));}
     private User activeUser(String email){return users.findByEmailIgnoreCase(email).filter(u->u.getStatus()==UserStatus.ACTIVE).orElseThrow(()->new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Authenticated user is unavailable"));}
     private void requireManager(User actor,Organisation org){
-        if(actor.getRoles().contains(com.medicontinuum.backend.user.enums.UserRole.PLATFORM_ADMIN))return;
         if(org.getStatus()!=OrganisationStatus.ACTIVE)throw conflict("Organisation is not active");
+        if(actor.getRoles().contains(com.medicontinuum.backend.user.enums.UserRole.PLATFORM_ADMIN))return;
         OrganisationMembership m=memberships.findByOrganisation_IdAndUser_Id(org.getId(),actor.getId()).filter(x->x.getStatus()==OrganisationMemberStatus.ACTIVE).orElseThrow(()->forbidden("Organisation membership required"));
         if(m.getRole()!=OrganisationMemberRole.OWNER&&m.getRole()!=OrganisationMemberRole.ADMIN&&m.getRole()!=OrganisationMemberRole.PHARMACIST&&m.getRole()!=OrganisationMemberRole.STAFF)throw forbidden("Procurement permission required");
     }

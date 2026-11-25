@@ -379,16 +379,15 @@ public class InventoryServiceImpl implements InventoryService {
                 HttpStatus.CONFLICT, "Only a TAKEN dose can consume inventory"
             );
         }
-        if (doseInventoryConsumptionRepository.existsByDoseSchedule_Id(doseScheduleId)) {
-            return;
-        }
-
         User currentUser = findUserByEmail(currentUserEmail);
         Patient patient = schedule.getPrescriptionItem().getPrescription().getPatient();
         if (!patient.getUser().getId().equals(currentUser.getId())) {
             throw new ResponseStatusException(
                 HttpStatus.FORBIDDEN, "You cannot consume another patient's inventory"
             );
+        }
+        if (doseInventoryConsumptionRepository.existsByDoseSchedule_Id(doseScheduleId)) {
+            return;
         }
 
         PrescriptionItem prescriptionItem = schedule.getPrescriptionItem();
