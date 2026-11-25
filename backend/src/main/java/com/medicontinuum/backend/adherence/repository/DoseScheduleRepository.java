@@ -14,10 +14,15 @@ import com.medicontinuum.backend.prescription.enums.PrescriptionStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface DoseScheduleRepository
         extends JpaRepository<DoseSchedule, UUID> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT d FROM DoseSchedule d WHERE d.id = :id")
+    Optional<DoseSchedule> findByIdForUpdate(@Param("id") UUID id);
 
     boolean existsByPrescriptionItem_IdAndScheduledAt(
         UUID prescriptionItemId,

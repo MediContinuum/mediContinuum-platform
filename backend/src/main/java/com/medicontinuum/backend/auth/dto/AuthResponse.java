@@ -1,5 +1,11 @@
 package com.medicontinuum.backend.auth.dto;
 
-public class AuthResponse {
-    
-}
+import com.medicontinuum.backend.user.dto.UserResponse;
+
+public record AuthResponse(
+    String accessToken,
+    String refreshToken,
+    String tokenType,
+    long expiresIn,
+    UserResponse user
+) {}

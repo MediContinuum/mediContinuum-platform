@@ -253,7 +253,7 @@ public class InventoryServiceImpl implements InventoryService {
 
         Patient patient = findPatientByEmail(currentUserEmail);
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         LocalDate expiryLimit = today.plusDays(withinDays);
 
         return inventoryItemRepository
@@ -295,7 +295,7 @@ public class InventoryServiceImpl implements InventoryService {
             );
         }
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
 
         List<InventoryBatch> batches =
             inventoryBatchRepository.findUsableBatchesForUpdate(
@@ -448,16 +448,28 @@ public class InventoryServiceImpl implements InventoryService {
             .filter(InventoryResponse::lowStock)
             .count();
 
-        BigDecimal totalAvailable = inventory.stream()
-            .map(InventoryResponse::availableQuantity)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        java.util.Map<String, BigDecimal> quantityByUnit = inventory.stream()
+            .collect(java.util.stream.Collectors.groupingBy(
+                item -> item.stockUnit().trim().toUpperCase(java.util.Locale.ROOT),
+                java.util.TreeMap::new,
+                java.util.stream.Collectors.reducing(
+                    BigDecimal.ZERO,
+                    InventoryResponse::availableQuantity,
+                    BigDecimal::add
+                )
+            ));
+
+        // A single scalar total is meaningful only when all items use the same unit.
+        BigDecimal totalAvailable = quantityByUnit.size() == 1
+            ? quantityByUnit.values().iterator().next()
+            : null;
 
         long expiringBatchCount = inventory.stream()
             .flatMap(item -> item.batches().stream())
             .filter(batch ->
                 batch.quantityRemaining().compareTo(BigDecimal.ZERO) > 0 &&
-                !batch.expiryDate().isBefore(LocalDate.now()) &&
-                !batch.expiryDate().isAfter(LocalDate.now().plusDays(30))
+                !batch.expiryDate().isBefore(today()) &&
+                !batch.expiryDate().isAfter(today().plusDays(30))
             )
             .count();
 
@@ -465,7 +477,8 @@ public class InventoryServiceImpl implements InventoryService {
             totalMedicineTypes,
             lowStockCount,
             totalAvailable,
-            expiringBatchCount
+            expiringBatchCount,
+            quantityByUnit
         );
     }
 
@@ -478,7 +491,7 @@ public class InventoryServiceImpl implements InventoryService {
 
         List<InventoryBatch> expiredBatches =
             inventoryBatchRepository.findExpiredBatchesForUpdate(
-                LocalDate.now()
+                today()
             );
 
         int expiredCount = 0;
@@ -530,7 +543,7 @@ public class InventoryServiceImpl implements InventoryService {
             );
         }
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
         LocalDate expiryLimit = today.plusDays(withinDays);
 
         List<InventoryBatch> expiringBatches =
@@ -652,7 +665,7 @@ public class InventoryServiceImpl implements InventoryService {
         InventoryItem item
     ) {
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = today();
 
         List<InventoryBatch> batches =
             inventoryBatchRepository

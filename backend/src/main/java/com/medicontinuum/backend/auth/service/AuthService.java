@@ -1,7 +1,14 @@
 package com.medicontinuum.backend.auth.service;
 
-import org.springframework.stereotype.Service;
+import com.medicontinuum.backend.auth.dto.AuthRequests;
+import com.medicontinuum.backend.auth.dto.AuthResponse;
+import com.medicontinuum.backend.user.dto.UserResponse;
 
-@Service
-public class AuthService {
+public interface AuthService {
+    AuthResponse registerPatient(AuthRequests.Register request);
+    AuthResponse login(AuthRequests.Login request);
+    AuthResponse refresh(AuthRequests.Refresh request);
+    UserResponse me(String email);
+    void logout(String email, AuthRequests.Logout request);
+    void changePassword(String email, AuthRequests.ChangePassword request);
 }
