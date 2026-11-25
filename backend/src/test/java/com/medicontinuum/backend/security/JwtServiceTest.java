@@ -1,7 +1,7 @@
 package com.medicontinuum.backend.security;
 
 import static org.junit.jupiter.api.Assertions.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 class JwtServiceTest {
