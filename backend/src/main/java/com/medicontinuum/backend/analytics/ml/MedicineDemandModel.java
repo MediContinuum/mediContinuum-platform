@@ -62,7 +62,7 @@ public class MedicineDemandModel {
 
         double zScore = zScore(serviceLevel);
         double safetyStock = zScore * residualStdDev * Math.sqrt(leadTimeDays);
-        double calculatedThreshold = roundUp(expectedLeadTimeDemand + safetyStock);
+        BigDecimal calculatedThreshold = roundUp(expectedLeadTimeDemand + safetyStock);
         BigDecimal configured = safeNonNegative(configuredThreshold);
         BigDecimal recommended = calculatedThreshold.max(configured).setScale(2, RoundingMode.CEILING);
         BigDecimal available = safeNonNegative(availableQuantity);
