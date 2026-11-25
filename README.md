@@ -2,7 +2,9 @@
 <div align="center">
 
 <br/>
-
+<p align="center">
+  <img src="https://res.cloudinary.com/debzdkdon/image/upload/v1795584814/logo_xpmsbv.jpg" alt="MediContinuum Logo" width="250">
+</p>
 # MediContinuum
 
 ### Intelligent Medication Continuity & Healthcare Management Platform
@@ -10,7 +12,6 @@
 **Connecting Patients • Empowering Families • Transforming Healthcare**
 
 
-![alt text](image-1.png)
 <br/>
 
 [![Java](https://img.shields.io/badge/Java-25-orange?style=for-the-badge&logo=openjdk)](https://www.java.com/)
