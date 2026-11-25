@@ -91,3 +91,39 @@ SMTP credentials are optional and should be configured only when email delivery 
 - `V5__other_backend_features.sql` documents the tables/columns for these new modules. This repository does not currently configure Flyway or an established complete migration baseline, so the SQL file does not run automatically. Local `ddl-auto=update` is non-destructive; production should use a reviewed baseline and sequential versioned migrations.
 - Existing patient CRUD, prescriptions, inventory, analytics and other patient APIs still need explicit organisation tenant checks before organisation staff can access them. Vendor/procurement/appointments/organisation analytics in this branch enforce organisation membership; this PR does not silently treat a link as universal authorization.
 - Google OAuth, refresh tokens, password-reset flows, organization-owned stock consumption and batch-cost accounting remain separate work.
+
+
+## OAuth2 / Google OpenID Connect
+
+Google OIDC login is optional and disabled by default. Set `GOOGLE_OAUTH2_ENABLED=true` plus:
+- `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID`
+- `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET`
+- `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE=openid,profile,email`
+
+Register the local redirect URI `http://localhost:8080/login/oauth2/code/google` in Google Cloud Console, and the matching HTTPS backend callback in deployed environments. Start login at `/oauth2/authorization/google`.
+
+Only a Google OIDC identity with `email_verified=true` is eligible for linking. The backend maps the Google subject to a local user, creates a PATIENT profile for a new user, and returns the application's own access/refresh tokens. Google tokens are not used as API bearer tokens. The OIDC flow uses a short-lived session for state/nonce; ordinary API requests remain stateless.
+
+## Observability and security
+
+- Actuator `/actuator/health`, `/actuator/metrics`, and `/actuator/prometheus` are exposed. Health is public; other Actuator endpoints require PLATFORM_ADMIN.
+- `GET /api/health/security` is restricted to PLATFORM_ADMIN and summarizes rate-limit/request-guard rejections and API request counts.
+- Request telemetry adds an `X-Request-ID` response header, correlates logs, records method/status request counters and duration timers, and never logs request bodies, authorization headers or query values.
+- `ApiRequestGuardFilter` rejects unsupported HTTP methods, executable/non-JSON body MIME types on JSON APIs, path traversal encodings, oversized query strings and oversized JSON bodies (including chunked bodies).
+- API responses carry CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy and Permissions-Policy headers.
+- User-provided JSON strings are treated as data, never executed. These controls do not replace safe HTML escaping in the frontend; do not inject stored text using unsafe HTML sinks.
+- API rate limiting is an in-memory token bucket per authenticated user or server-observed remote IP. It mitigates abusive bursts on one instance. For production DDoS protection, configure a CDN/WAF or API gateway, upstream connection limits and shared quotas across replicas. Do not trust client-supplied X-Forwarded-For; configure forwarded headers only from known reverse proxies.
+
+## Java-only medicine threshold prediction
+
+`GET /api/analytics/medicine-thresholds?historyDays=90&leadTimeDays=7&serviceLevel=0.95`
+
+For organisation stock, include `organisationId={uuid}`.
+
+The Java-only model runs independently for each patient/organisation medicine stock item. It uses:
+- exponentially weighted moving average for current consumption level,
+- ordinary least-squares linear trend for demand direction,
+- residual standard deviation and target service level for safety stock,
+- forecast demand over the configured lead time.
+
+The recommended reorder threshold is the greater of the model threshold and the existing user-configured threshold. Recommendations are advisory and never silently overwrite the user's threshold. At least 10 days with recorded consumption are required; otherwise the model returns `INSUFFICIENT_DATA` and retains the configured threshold. This is a transparent statistical model, not a clinical dosage recommender or deep neural network. Organisation stock predictions require organisation stock `CONSUMED` transactions to exist; the current procurement receipt flow records receipts only.

@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import com.medicontinuum.backend.security.RequestBodyLimitExceededException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,6 +33,19 @@ public class GlobalException {
             .distinct()
             .collect(Collectors.joining("; "));
         return response(HttpStatus.BAD_REQUEST, message.isBlank() ? "Validation failed" : message);
+    }
+
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<Map<String, Object>> handleUnreadable(HttpMessageNotReadableException ex) {
+        Throwable cause = ex;
+        while (cause != null) {
+            if (cause instanceof RequestBodyLimitExceededException) {
+                return response(HttpStatus.PAYLOAD_TOO_LARGE, "Request body exceeds the configured size limit");
+            }
+            cause = cause.getCause();
+        }
+        return response(HttpStatus.BAD_REQUEST, "Request body is malformed or contains invalid values");
     }
 
     @ExceptionHandler(AccessDeniedException.class)
