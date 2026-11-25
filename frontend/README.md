@@ -1,63 +1,30 @@
-# MediContinuum Frontend
+# MediContinuum — two pure frontends (no backend)
 
-The frontend is a browser application built with React, TypeScript, Vite, React Router, and TanStack Query.
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the frontend/backend boundary, API integration rules, and contribution checklist.
-
-## Frontend/backend boundary
-
-The `frontend/` directory contains presentation and browser-side application code only:
-
-- Pages, layouts, reusable UI components, navigation, and responsive styling.
-- Form state and client-side validation for a good user experience.
-- Browser state, query caching, loading/error states, and display formatting.
-- HTTP request adapters that call the Spring Boot API.
-
-The files in `src/services/` are **frontend API clients**, not backend services. They send HTTP requests through `src/lib/axios.ts` and translate API responses into data the UI can display. Keep these adapters in the frontend; deleting them would disconnect the UI from the backend.
-
-The backend remains responsible for all authoritative operations, including authentication, authorization, permission enforcement, business rules, validation of incoming requests, database access, transactions, scheduling, and sensitive processing. Frontend role checks and form validation are for presentation and usability only; they are never a security boundary.
-
-Do not add Spring controllers, repositories, JPA entities, database drivers, SQL/JDBC access, server credentials, or backend business workflows to this directory. Implement those in `backend/` (or the appropriate server-side module) and expose them through an API.
-
-## Source layout
-
-| Path | Purpose |
-| --- | --- |
-| `src/app/` | App bootstrap, providers, routing |
-| `src/components/` | Shared UI and layout components |
-| `src/features/` | Feature-specific pages, components, and browser hooks |
-| `src/hooks/` | Reusable React hooks |
-| `src/lib/axios.ts` | Shared HTTP client for backend API requests |
-| `src/services/` | Frontend API request adapters |
-| `src/schemas/` | Client-side form/input schemas |
-| `src/store/` | Browser-side state |
-| `src/styles/`, `src/index.css` | Frontend styling |
-| `src/types/` | TypeScript API and UI data contracts |
-| `src/utils/` | Formatting and client-side helpers |
-
-## Environment configuration
-
-Copy `.env.example` to `.env` and adjust the local values when needed.
-
-- `VITE_API_BASE_URL` is the API path used by the browser (default: `/api`).
-- `VITE_API_PROXY_TARGET` is the local Spring Boot server used by the Vite development proxy (default: `http://localhost:8080`).
-
-**Every variable prefixed with `VITE_` is exposed to the browser bundle. Never put database passwords, private API keys, signing secrets, or other server credentials in frontend environment variables.** Keep the real local `.env` file untracked; commit only `.env.example` with safe placeholders.
-
-## Development
-
-Requirements: Node.js `>=22.12.0` and npm `>=10.9.0`.
+| Folder | App | URL |
+|---|---|---|
+| `medicontinuum-web/` | Patient site (React + Vite) | http://localhost:5173 |
+| `medicontinuum-organization/` | Organization portal (React + Vite) | http://localhost:5174 |
+| `shared/` | Option lists, seed data, helpers used by both | – |
 
 ```bash
-npm install
-npm run dev
+./install-all.sh   # Windows: install-all.bat
+./start-all.sh     # Windows: start-all.bat
 ```
+Open **both** apps with `localhost` (not 127.0.0.1) so they share one registry.
 
-Useful checks:
+## Organization portal
+Register (organization: licence + government ID · doctor: doctor ID) → get a unique **16-digit number** → sign up with number + registered email → log in with number + password.
+Organizations can list their doctors and share doctors / blood / organs / equipment / medicines with other organizations (request/offer, accept/decline, fulfil). Demo login: `5011000000000014` (AIIMS Kalyani) / `Demo@1234`.
 
-```bash
-npm run typecheck
-npm run lint
-npm run test:run
-npm run build
-```
+## Patient site
+Shows every registered organisation (seeded with Kalyani hospitals, clinic, lab, pharmacy, blood bank and doctors) live. Added: **chatbot** (text, voice, photo → logs a dose and reduces stock), **AI Summary** page and **PDF report download**. Optional: paste a Gemini API key in `mc.gemini.v1` (localStorage) to let the chatbot answer free questions; without it the bot is rule-based.
+
+## How sync works without a backend
+Different ports = different browser origins = separate localStorage. The patient site serves `public/hub.html`; the portal embeds it in a hidden iframe and reads/writes the registry via `postMessage` (compare-and-set on `rev`). If the patient site is off, the portal saves locally and re-syncs later.
+
+## Limits (be aware)
+* Frontend-only = no real security: passwords are SHA-256 hashed in the browser; data is in localStorage. Demo use only.
+* Sync works on one machine/browser (same host, different ports).
+* Seed data: Kalyani institution names are real places; licences, phones, emails and **all doctors are made up** — replace before public use.
+* Photo logging asks you which medicine it is (no image recognition).
+* `npm test` in `medicontinuum-organization` runs 14 tests of the portal logic.
