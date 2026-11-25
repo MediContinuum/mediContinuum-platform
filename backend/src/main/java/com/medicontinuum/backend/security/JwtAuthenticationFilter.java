@@ -2,6 +2,7 @@ package com.medicontinuum.backend.security;
 
 import java.io.IOException;
 import java.util.List;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import com.medicontinuum.backend.user.entity.User;
 import com.medicontinuum.backend.user.enums.UserStatus;
@@ -22,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final MeterRegistry meterRegistry;
 
     @Override
     protected void doFilterInternal(
@@ -38,6 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .filter(user -> user.getStatus() == UserStatus.ACTIVE)
                     .filter(user -> user.getTokenVersion() == claims.tokenVersion())
                     .ifPresent(this::authenticate);
+            } else {
+                meterRegistry.counter("medicontinuum.security.rejections", "reason", "invalid_bearer_token").increment();
             }
         }
         filterChain.doFilter(request, response);
