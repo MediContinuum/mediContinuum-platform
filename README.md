@@ -413,6 +413,20 @@ main
 | Member 4 | AI/ML Engineering |
 
 ---
+
+
+## 🌍 Real-World Impact
+
+MediContinuum aims to improve medication continuity by:
+
+- Reducing missed medication doses through timely reminders.
+- Helping families stay informed about medication schedules.
+- Improving medicine stock and expiry tracking.
+- Making prescription and patient information easier to manage.
+- Supporting better coordination between patients and caregivers.
+
+
+
 <video controls src="20261125-1723-27.6481395.mp4" title="Title"></video>
 ## Future Scope
 
