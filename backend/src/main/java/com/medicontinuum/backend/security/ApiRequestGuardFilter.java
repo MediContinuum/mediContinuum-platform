@@ -76,7 +76,7 @@ public class ApiRequestGuardFilter extends OncePerRequestFilter {
             return;
         }
 
-        boolean hasBody = contentLength > 0 || request.getHeader("Transfer-Encoding") != null;
+        boolean hasBody = contentLength != 0 || request.getHeader("Transfer-Encoding") != null;
         if (BODY_METHODS.contains(request.getMethod().toUpperCase(Locale.ROOT)) && hasBody) {
             String contentType = request.getContentType();
             if (contentType == null || !isJson(contentType)) {
