@@ -119,6 +119,13 @@ MediContinuum integrates these workflows into a single platform.
 
 ---
 
+## 📊 System Architecture / Workflow
+
+<p align="center">
+  <img src="https://miro.medium.com/v2/resize:fit:1100/format:webp/1*1LrUNbB0pOCHbV2kgqNzPg.png" alt="MediContinuum Architecture Workflow" width="100%">
+</p>
+
+
 ## System Architecture
 
 <div align="center">
