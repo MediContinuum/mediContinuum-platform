@@ -48,7 +48,6 @@ public class AppointmentServiceImpl implements AppointmentService{
             ensureOrganisationDoctor(org,doctor);ensureOrganisationPatient(org,patient);
         }
         ensureCanBook(actor,patient,doctor,org);
-        }
         assertNoOverlap(patient,doctor,start,end,null);
         Appointment a=new Appointment();a.setPatient(patient);a.setDoctor(doctor);a.setOrganisation(org);a.setCreatedBy(actor);
         a.setStartAt(start);a.setEndAt(end);a.setReason(clean(r.reason()));a.setType(r.type()==null?AppointmentType.IN_PERSON:r.type());a.setStatus(AppointmentStatus.SCHEDULED);
