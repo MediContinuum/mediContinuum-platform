@@ -37,7 +37,7 @@ export function Navbar() {
           <Link to="/notifications" aria-label="Notifications" className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"><Bell size={20}/></Link>
           {isAuthenticated ? <>
             <span className="max-w-28 truncate text-sm font-medium text-slate-700" title={user.email}>{name}</span>
-            <button type="button" onClick={() => logout()} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">Log out</button>
+            <button type="button" onClick={() => { logout().catch(() => {}); }} className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">Log out</button>
           </> : <>
             <Link to="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">Log in</Link>
             <Link to="/signup" className={btnPrimary}>Sign up</Link>
@@ -49,7 +49,7 @@ export function Navbar() {
         <div className="pb-2"><BackendStatus /></div>
         {links.map((link) => <NavLink key={link.to} to={link.to} end={link.end} onClick={closeMobile} className={({isActive}) => `block ${linkCls({isActive})}`}>{link.label}</NavLink>)}
         <div className="flex gap-2 pt-2">
-          {isAuthenticated ? <button type="button" onClick={() => { closeMobile(); logout(); }} className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold">Log out · {name}</button> : <>
+          {isAuthenticated ? <button type="button" onClick={() => { closeMobile(); logout().catch(() => {}); }} className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold">Log out · {name}</button> : <>
             <Link to="/login" onClick={closeMobile} className="flex-1 rounded-xl border border-slate-200 py-2.5 text-center text-sm font-semibold">Log in</Link>
             <Link to="/signup" onClick={closeMobile} className={`${btnPrimary} flex-1`}>Sign up</Link>
           </>}
