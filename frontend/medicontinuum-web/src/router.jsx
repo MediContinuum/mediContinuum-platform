@@ -36,6 +36,7 @@ export const router = createBrowserRouter([
           { path: 'notifications', ...page(() => import('@/pages/Notifications')) },
           { path: 'organisations', ...page(() => import('@/pages/Organisations')) },
           { path: 'vendors', ...page(() => import('@/pages/Vendors')) },
+          { path: 'demo-network', ...page(() => import('@/pages/DemoNetwork')) },
         ],
       },
       { path: '*', element: <NotFound /> },
