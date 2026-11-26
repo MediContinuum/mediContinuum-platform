@@ -110,6 +110,8 @@ export default function ChatWidget() {
   const [aiError, setAiError] = useState('');
   const [lastFailedQuestion, setLastFailedQuestion] = useState('');
   const endRef = useRef(null);
+  const busyRef = useRef(false);
+  const conversationVersionRef = useRef(0);
 
   const checkStatus = useCallback(async () => {
     setAiStatus((current) => ({ ...current, loading: true }));
@@ -132,11 +134,24 @@ export default function ChatWidget() {
   }, []);
 
   useEffect(() => { checkStatus(); }, [checkStatus]);
+  useEffect(() => {
+    conversationVersionRef.current += 1;
+    setMessages([{
+      role: 'bot',
+      text: isAuthenticated
+        ? 'Welcome back. I can help with MediContinuum features and the live information currently available from your backend account.'
+        : 'Hi! I’m MediContinuum Assistant. Ask me about medicines, medication continuity, inventory or the Kalyani presentation demo.',
+    }]);
+    setAiError('');
+    setLastFailedQuestion('');
+  }, [isAuthenticated]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages, loading, open, aiError]);
 
   const send = useCallback(async (raw) => {
     const question = String(raw || '').trim();
-    if (!question || loading) return;
+    if (!question || busyRef.current) return;
+    busyRef.current = true;
+    const conversationVersion = conversationVersionRef.current;
 
     const previousHistory = messages.slice(-8).filter((message) => message.text);
     setMessages((old) => [...old, { role: 'user', text: question }]);
@@ -172,16 +187,21 @@ export default function ChatWidget() {
         demo: isDemo,
       });
 
-      setMessages((old) => [...old, { role: 'bot', text: answer }]);
+      if (conversationVersion === conversationVersionRef.current) {
+        setMessages((old) => [...old, { role: 'bot', text: answer }]);
+      }
     } catch (error) {
-      const friendly = displayError(error);
-      setAiError(friendly);
-      setLastFailedQuestion(question);
-      setMessages((old) => [...old, {
-        role: 'bot',
-        text: `I couldn’t get a Gemini response. ${friendly}`,
-      }]);
+      if (conversationVersion === conversationVersionRef.current) {
+        const friendly = displayError(error);
+        setAiError(friendly);
+        setLastFailedQuestion(question);
+        setMessages((old) => [...old, {
+          role: 'bot',
+          text: `I couldn’t get a Gemini response. ${friendly}`,
+        }]);
+      }
     } finally {
+      busyRef.current = false;
       setLoading(false);
     }
   }, [aiStatus, isAuthenticated, loading, messages, state]);
