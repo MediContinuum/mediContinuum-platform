@@ -1,5 +1,9 @@
 // Gemini requests are sent through the Spring Boot API. The API key never reaches the browser.
-import { api } from '@/api/client';
+import { api, isBackendAuthenticated } from '@/api/client';
+
+// Availability means an authenticated session can call the protected assistant route.
+// The backend reports a clear configuration error if GEMINI_API_KEY is not configured.
+export const hasGemini = isBackendAuthenticated;
 
 export const DEFAULT_MODEL = 'gemini-3.8-flash';
 
