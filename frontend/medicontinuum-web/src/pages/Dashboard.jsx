@@ -404,7 +404,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Welcome back, ${USER.name.split(' ')[0]}`}
+        title={`Welcome back, ${(user?.fullName || USER.name).split(' ')[0]}`}
         subtitle="Here is your medicine plan for today."
         action={<Link to="/inventory" className={btnPrimary}>Add stock</Link>}
       />
