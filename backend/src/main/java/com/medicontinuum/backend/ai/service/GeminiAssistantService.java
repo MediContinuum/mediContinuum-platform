@@ -83,12 +83,14 @@ public class GeminiAssistantService {
 
             ObjectNode generation = payload.putObject("generation_config");
             generation.put("max_output_tokens", 700);
-            // The Interactions API GenerationConfig does not accept the legacy generateContent temperature field.
+            generation.put("thinking_level", "low");
+            // Interactions API uses thinking_level; the legacy generateContent temperature is not sent.
 
             HttpRequest httpRequest = HttpRequest.newBuilder(GEMINI_ENDPOINT)
                 .timeout(Duration.ofSeconds(55))
                 .header("Content-Type", "application/json")
                 .header("x-goog-api-key", apiKey)
+                .header("Api-Revision", "2026-05-20")
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(payload)))
                 .build();
 
