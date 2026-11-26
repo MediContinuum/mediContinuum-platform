@@ -10,9 +10,14 @@ const dateLabel = (value) => {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 };
 const timeLabel = (value) => value ? new Date(`1970-01-01T${value}`).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }) : '—';
+const addTwentyMinutes = (time) => {
+  const [hours, minutes] = time.split(':').map(Number);
+  const total = (hours * 60 + minutes + 20) % (24 * 60);
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}:00`;
+};
 const demoRecords = DEMO_APPOINTMENTS.map((item) => ({
   id: item.id, appointmentDate: item.date, startTime: item.time,
-  endTime: item.time, patientName: item.patient, doctorName: item.doctor,
+  endTime: addTwentyMinutes(item.time), patientName: item.patient, doctorName: item.doctor,
   status: item.status, reason: 'Sample follow-up visit', type: 'IN_PERSON',
   organisationName: 'Kalyani Demo Network',
 }));
