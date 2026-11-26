@@ -25,8 +25,11 @@ If the backend is not on port 8080, set VITE_BACKEND_PROXY_TARGET in the fronten
 - Login uses POST /api/auth/login; session restoration uses GET /api/auth/me.
 - Registration uses POST /api/auth/register. The backend creates a PATIENT account and accepts first name, last name, email, password, and phone number only.
 - Tokens are held in tab-scoped sessionStorage; an access-token refresh is attempted once after a 401 response.
-- Gemini calls go through authenticated POST /api/ai/chat. The API key is read only by Spring Boot from GEMINI_API_KEY.
-- The assistant receives compact schedule/inventory context, applies healthcare safety instructions, and shows a clear error if Gemini is unavailable. It is not a clinician and must not be used for diagnosis or treatment decisions.
+- Gemini readiness is checked through GET /api/ai/status.
+- Guest presentation chat uses POST /api/ai/demo-chat. It has no account or patient context and is subject to a stricter per-client request budget.
+- Signed-in chat uses authenticated POST /api/ai/chat. Only live backend inventory and aggregate adherence data are sent; user name, email and Global ID are not sent.
+- Both routes use the server-side GEMINI_API_KEY. The API key is never sent to the browser.
+- The assistant uses the Google Interactions API with GEMINI_MODEL (default gemini-3.8-flash), checks for a non-empty response, and surfaces configuration, authentication, quota, timeout and upstream errors. It applies healthcare safety instructions and is not a clinician or a substitute for diagnosis or treatment.
 
 ## Live backend connections
 
