@@ -49,6 +49,7 @@ export default function DashboardBackendMetrics() {
       <Badge tone={status === 'live' ? 'green' : status === 'unavailable' ? 'amber' : 'slate'}>{status === 'live' ? 'Live API' : status === 'loading' ? 'Loading' : status === 'unavailable' ? 'Unavailable' : 'Demo'}</Badge>
     </div>
     {message && <p role="status" className="mb-3 text-xs text-amber-800">{message}</p>}
+    <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">Only the metrics above are live. The daily dose list, month/week charts, and stock counters further down the page are still synthetic browser demo data; patient dose schedule and update endpoints are not implemented yet.</p>
     {metrics.length ? <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {metrics.slice(0, 8).map((metric, index) => <div key={`${metric.label}-${index}`} className="rounded-xl bg-slate-50 p-3">
         <p className="text-xs text-slate-500">{metric.label}</p>
