@@ -80,6 +80,8 @@ public class GeminiAssistantService {
             payload.put("input", buildInput(request));
             // Healthcare conversations can contain sensitive information. Do not retain prompts at Google.
             payload.put("store", false);
+            payload.put("background", false);
+            payload.put("stream", false);
 
             ObjectNode generation = payload.putObject("generation_config");
             generation.put("max_output_tokens", 700);
@@ -110,6 +112,12 @@ public class GeminiAssistantService {
             String status = body.path("status").asText("completed");
             if (!"completed".equals(status) && !"incomplete".equals(status)) {
                 String detail = body.path("error").path("message").asText("");
+                if (detail.isBlank() && body.path("errors").isArray() && !body.path("errors").isEmpty()) {
+                    detail = body.path("errors").get(0).path("message").asText("");
+                }
+                if (detail.isBlank() && body.path("errors").isArray() && !body.path("errors").isEmpty()) {
+                    detail = body.path("errors").get(0).path("message").asText("");
+                }
                 throw new ResponseStatusException(
                     HttpStatus.BAD_GATEWAY,
                     "Gemini interaction did not complete (status: " + status + ")."
