@@ -112,10 +112,7 @@ public class GeminiAssistantService {
             String status = body.path("status").asText("completed");
             if (!"completed".equals(status) && !"incomplete".equals(status)) {
                 String detail = body.path("error").path("message").asText("");
-                if (detail.isBlank() && body.path("errors").isArray() && !body.path("errors").isEmpty()) {
-                    detail = body.path("errors").get(0).path("message").asText("");
-                }
-                if (detail.isBlank() && body.path("errors").isArray() && !body.path("errors").isEmpty()) {
+                if (detail.isBlank() && body.path("errors").isArray() && body.path("errors").size() > 0) {
                     detail = body.path("errors").get(0).path("message").asText("");
                 }
                 throw new ResponseStatusException(
