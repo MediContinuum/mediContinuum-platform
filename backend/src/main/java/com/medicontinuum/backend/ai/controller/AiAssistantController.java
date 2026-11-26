@@ -22,8 +22,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AiAssistantController {
     private final GeminiAssistantService assistantService;
 
+    /**
+     * Non-sensitive readiness information so both guest and authenticated
+     * frontends can show whether the server has a Gemini key configured.
+     */
     @GetMapping("/status")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Map<String, Object>> status() {
         boolean configured = assistantService.isConfigured();
         return ResponseEntity.status(configured ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE)
@@ -37,6 +40,23 @@ public class AiAssistantController {
             ));
     }
 
+    /**
+     * Public presentation endpoint. It uses no account or patient data.
+     * The shared API rate limiter applies a stricter per-client budget.
+     */
+    @PostMapping("/demo-chat")
+    public ResponseEntity<ChatResponse> demoChat(@Valid @RequestBody ChatRequest request) {
+        ChatRequest safeRequest = new ChatRequest(
+            request.message(),
+            request.history(),
+            request.context()
+        );
+        return ResponseEntity.ok(assistantService.ask(safeRequest));
+    }
+
+    /**
+     * Authenticated chat endpoint for account-aware assistant workflows.
+     */
     @PostMapping("/chat")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChatResponse> chat(@Valid @RequestBody ChatRequest request) {
