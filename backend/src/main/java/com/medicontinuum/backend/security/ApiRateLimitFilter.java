@@ -22,14 +22,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Bounded per-instance token bucket. Use a gateway/WAF for distributed
- * volumetric DDoS protection and shared quotas across application replicas.
+ * Bounded per-instance token bucket. Public Gemini demo requests have a much
+ * smaller budget than ordinary API requests to protect paid upstream capacity.
+ * Use a gateway/WAF for distributed volumetric DDoS protection and shared quotas.
  */
 @Component
 @RequiredArgsConstructor
 public class ApiRateLimitFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(ApiRateLimitFilter.class);
     private static final long CLEANUP_INTERVAL_MILLIS = 30_000L;
+    private static final String DEMO_CHAT_PATH = "/api/ai/demo-chat";
 
     private final MeterRegistry meterRegistry;
     private final java.time.Clock clock;
@@ -44,6 +46,12 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
 
     @Value("${app.security.rate-limit.refill-per-second:1}")
     private double refillPerSecond;
+
+    @Value("${app.security.rate-limit.ai-demo-burst:8}")
+    private long aiDemoBurstCapacity;
+
+    @Value("${app.security.rate-limit.ai-demo-refill-per-second:0.1}")
+    private double aiDemoRefillPerSecond;
 
     @Value("${app.security.rate-limit.max-tracked-clients:50000}")
     private int maxTrackedClients;
@@ -67,18 +75,22 @@ public class ApiRateLimitFilter extends OncePerRequestFilter {
         cleanupIfNeeded(now);
 
         String key = clientKey(request);
+        boolean demoChat = DEMO_CHAT_PATH.equals(request.getRequestURI());
+        long capacity = Math.max(1, demoChat ? aiDemoBurstCapacity : burstCapacity);
+        double refill = Math.max(0.01, demoChat ? aiDemoRefillPerSecond : refillPerSecond);
+
         Bucket bucket = buckets.get(key);
         if (bucket == null) {
             if (buckets.size() >= Math.max(100, maxTrackedClients)) {
                 reject(response);
                 return;
             }
-            Bucket candidate = new Bucket(Math.max(1, burstCapacity), now);
+            Bucket candidate = new Bucket(capacity, now);
             Bucket previous = buckets.putIfAbsent(key, candidate);
             bucket = previous == null ? candidate : previous;
         }
 
-        if (!bucket.tryConsume(now, Math.max(1, burstCapacity), Math.max(0.01, refillPerSecond))) {
+        if (!bucket.tryConsume(now, capacity, refill)) {
             reject(response);
             log.warn("SECURITY_EVENT event=api_rate_limit_rejected client={} method={} path={}",
                 safeClient(key), request.getMethod(), safePath(request.getRequestURI()));
