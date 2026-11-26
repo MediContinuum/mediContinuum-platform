@@ -8,6 +8,7 @@ import BackendStatus from '@/components/BackendStatus';
 const links = [
   { to: '/', label: 'Home', end: true },
   { to: '/dashboard', label: 'Dashboard' },
+  { to: '/appointments', label: 'Appointments' },
   { to: '/medicines', label: 'Medicines' },
   { to: '/prescriptions', label: 'Prescriptions' },
   { to: '/vendors', label: 'Pharmacies' },
