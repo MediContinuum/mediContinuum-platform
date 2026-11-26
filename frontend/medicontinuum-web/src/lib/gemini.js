@@ -1,41 +1,63 @@
-// Gemini requests are sent through the Spring Boot API. The API key never reaches the browser.
+// The Gemini API key is held exclusively by the Spring Boot backend.
 import { api, isBackendAuthenticated } from '@/api/client';
 
-// Availability means an authenticated session can call the protected assistant route.
-// The backend reports a clear configuration error if GEMINI_API_KEY is not configured.
+export const DEFAULT_MODEL = 'gemini-3.8-flash';
 export const hasGemini = isBackendAuthenticated;
 
-export const DEFAULT_MODEL = 'gemini-3.8-flash';
-
-export async function askGemini({ prompt, snapshot, history = [] }) {
-  const context = {
-    adherencePercent: snapshot?.percent ?? 0,
-    doses: (snapshot?.doses ?? []).map((dose) => ({
-      medicine: dose.medicine, time: dose.time, dose: dose.dose, status: dose.status,
+function makePayload({ prompt, snapshot, history }) {
+  const context = snapshot ? {
+    syntheticDemoData: Boolean(snapshot.syntheticDemoData),
+    adherencePercent: snapshot.percent ?? null,
+    doses: (snapshot.doses ?? []).map((dose) => ({
+      medicine: dose.medicine,
+      time: dose.time,
+      dose: dose.dose,
+      status: dose.status,
     })),
-    supply: snapshot?.supply ?? [],
-    expiring: (snapshot?.expiring ?? []).map((item) => ({ medicine: item.medicine, daysLeft: item.daysLeft })),
-    activePrescriptions: (snapshot?.activePrescriptions ?? []).map((prescription) => ({
+    supply: (snapshot.supply ?? []).map((item) => ({
+      medicine: item.medicine,
+      quantity: item.quantity,
+      daysLeft: item.daysLeft ?? null,
+      lowStock: item.lowStock ?? false,
+    })),
+    expiring: (snapshot.expiring ?? []).map((item) => ({
+      medicine: item.medicine,
+      daysLeft: item.daysLeft,
+    })),
+    activePrescriptions: (snapshot.activePrescriptions ?? []).map((prescription) => ({
       doctor: prescription.doctor,
       items: (prescription.items ?? []).map((item) =>
         `${item.medicine} ${item.dosageAmount} ${item.dosageUnit} ${item.frequency}`
       ),
     })),
-  };
-  const result = await api.geminiChat({
-    message: prompt,
-    history: history.slice(-8).map((message) => ({
+    dataNotes: snapshot.dataNotes ?? [],
+  } : null;
+
+  return {
+    message: prompt.trim(),
+    history: history.slice(-8).filter((message) => message?.text).map((message) => ({
       role: message.role === 'user' ? 'USER' : 'ASSISTANT',
-      text: message.text,
+      text: String(message.text).slice(0, 1200),
     })),
-    context: JSON.stringify(context).slice(0, 12000),
-  });
-  return result.answer;
+    context: context ? JSON.stringify(context).slice(0, 12000) : null,
+  };
+}
+
+export async function askGemini({ prompt, snapshot = null, history = [], demo = false }) {
+  const payload = makePayload({ prompt, snapshot, history });
+  const result = demo
+    ? await api.geminiDemoChat(payload)
+    : await api.geminiChat(payload);
+
+  if (typeof result?.answer !== 'string' || !result.answer.trim()) {
+    throw new Error('Gemini returned an empty response. Please try again.');
+  }
+  return result.answer.trim();
 }
 
 export async function polishSummary(snapshot, baseText) {
   return askGemini({
     snapshot,
-    prompt: `Rewrite this tracking summary in plain language. Keep all clinical facts and numbers unchanged:\n${baseText}`,
+    prompt: `Rewrite this tracking summary in plain language. Preserve every fact and number. Do not add medical advice:\n${baseText}`,
   });
 }
