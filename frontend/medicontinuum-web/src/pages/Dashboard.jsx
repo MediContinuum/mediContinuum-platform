@@ -10,6 +10,7 @@ import { useDoses } from '@/hooks/useDoses';
 import { IMG, USER } from '@/data/mock';
 import { usePatient } from '@/store/patientStore';
 import { isExpiring, isLow } from '@/utils/inventory';
+import DashboardBackendMetrics from '@/components/DashboardBackendMetrics';
 
 /* ------------------------------------------------------------------ */
 /* Sample tablets (real photos, with a drawn fallback if one fails)    */
@@ -405,6 +406,8 @@ export default function Dashboard() {
         subtitle="Here is your medicine plan for today."
         action={<Link to="/inventory" className={btnPrimary}>Add stock</Link>}
       />
+
+      <DashboardBackendMetrics />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat icon={CalendarCheck} label="Doses today" value={doses.length} />
