@@ -1,6 +1,6 @@
 import {
   Bell, Boxes, Building2, CalendarCheck, ClipboardList,
-  LayoutDashboard, Pill, Sparkles, Store, User, Users,
+  LayoutDashboard, MapPin, Pill, Sparkles, Store, User, Users,
 } from 'lucide-react';
 
 export const APP_NAV = [
@@ -14,5 +14,6 @@ export const APP_NAV = [
   { to: '/notifications', label: 'Notifications', icon: Bell },
   { to: '/organisations', label: 'Organisations', icon: Building2 },
   { to: '/vendors', label: 'Pharmacies', icon: Store },
+  { to: '/demo-network', label: 'Kalyani Demo', icon: MapPin },
   { to: '/profile', label: 'Profile', icon: User },
 ];
