@@ -26,6 +26,7 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: 'dashboard', ...page(() => import('@/pages/Dashboard')) },
+          { path: 'appointments', ...page(() => import('@/pages/Appointments')) },
           { path: 'summary', ...page(() => import('@/pages/Summary')) },
           { path: 'profile', ...page(() => import('@/pages/Profile')) },
           { path: 'family', ...page(() => import('@/pages/Family')) },
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
           { path: 'notifications', ...page(() => import('@/pages/Notifications')) },
           { path: 'organisations', ...page(() => import('@/pages/Organisations')) },
           { path: 'vendors', ...page(() => import('@/pages/Vendors')) },
+          { path: 'demo-network', ...page(() => import('@/pages/DemoNetwork')) },
         ],
       },
       { path: '*', element: <NotFound /> },

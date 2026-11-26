@@ -10,6 +10,8 @@ import { useDoses } from '@/hooks/useDoses';
 import { IMG, USER } from '@/data/mock';
 import { usePatient } from '@/store/patientStore';
 import { isExpiring, isLow } from '@/utils/inventory';
+import DashboardBackendMetrics from '@/components/DashboardBackendMetrics';
+import { useAuth } from '@/auth/AuthContext';
 
 /* ------------------------------------------------------------------ */
 /* Sample tablets (real photos, with a drawn fallback if one fails)    */
@@ -351,6 +353,7 @@ function MonthCalendar({ countFor }) {
 /* ------------------------------------------------------------------ */
 export default function Dashboard() {
   const { doses, mark, percent } = useDoses();
+  const { user } = useAuth();
   const { inventory: INVENTORY } = usePatient();
   const pending = doses.filter((d) => d.status === 'PENDING').length;
 
@@ -401,10 +404,12 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Welcome back, ${USER.name.split(' ')[0]}`}
+        title={`Welcome back, ${(user?.fullName || USER.name).split(' ')[0]}`}
         subtitle="Here is your medicine plan for today."
         action={<Link to="/inventory" className={btnPrimary}>Add stock</Link>}
       />
+
+      <DashboardBackendMetrics />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat icon={CalendarCheck} label="Doses today" value={doses.length} />

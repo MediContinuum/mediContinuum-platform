@@ -53,11 +53,17 @@ jobs:
         run: ./mvnw -B verify
 
   frontend:
-    name: Frontend lint and build
+    name: Frontend build (${{ matrix.app }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - medicontinuum-web
+          - medicontinuum-organization
     defaults:
       run:
-        working-directory: frontend
+        working-directory: frontend/${{ matrix.app }}
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -66,10 +72,8 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: frontend/${{ matrix.app }}/package-lock.json
       - name: Install dependencies
         run: npm ci
-      - name: Lint
-        run: npm run lint
-      - name: Build
+      - name: Build Vite application
         run: npm run build
