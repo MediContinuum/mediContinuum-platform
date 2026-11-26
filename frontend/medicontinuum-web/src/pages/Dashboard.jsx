@@ -11,6 +11,7 @@ import { IMG, USER } from '@/data/mock';
 import { usePatient } from '@/store/patientStore';
 import { isExpiring, isLow } from '@/utils/inventory';
 import DashboardBackendMetrics from '@/components/DashboardBackendMetrics';
+import { useAuth } from '@/auth/AuthContext';
 
 /* ------------------------------------------------------------------ */
 /* Sample tablets (real photos, with a drawn fallback if one fails)    */
@@ -352,6 +353,7 @@ function MonthCalendar({ countFor }) {
 /* ------------------------------------------------------------------ */
 export default function Dashboard() {
   const { doses, mark, percent } = useDoses();
+  const { user } = useAuth();
   const { inventory: INVENTORY } = usePatient();
   const pending = doses.filter((d) => d.status === 'PENDING').length;
 
