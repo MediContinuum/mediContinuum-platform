@@ -4,11 +4,15 @@ React 18 + Vite 6 + Tailwind CSS 4. The patient application runs at **http://loc
 
 ## Local setup
 
-1. Start PostgreSQL and configure the backend using backend/.env.example.
-2. Set a JWT secret of at least 32 UTF-8 bytes. For Gemini, set GEMINI_API_KEY and optionally GEMINI_MODEL=gemini-3.8-flash in the backend process environment. Never put a Gemini key in a VITE_ variable or commit it to Git.
-3. Start the backend:
+1. Start PostgreSQL.
+2. Create your local backend environment file and edit its database/JWT values:
 
    cd backend
+   cp .env.example .env
+
+   The backend imports this ignored .env file automatically. Set GEMINI_API_KEY to your Google AI Studio key and keep GEMINI_MODEL=gemini-3.8-flash (or another model enabled for your project). Never put a Gemini key in a VITE_ variable or commit it to Git.
+3. Start the backend from the same backend directory:
+
    ./mvnw spring-boot:run
 
 4. Configure and start the patient frontend:
