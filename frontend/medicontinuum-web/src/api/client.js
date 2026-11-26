@@ -109,6 +109,7 @@ export const api = {
   updateThreshold: (id, lowStockThreshold) => apiRequest(`/inventory/me/items/${id}/threshold`, { method: 'PATCH', body: { lowStockThreshold } }),
   appointments: (params = {}) => apiRequest(`/appointments${Object.keys(params).length ? `?${new URLSearchParams(params)}` : ''}`),
   createAppointment: (payload) => apiRequest('/appointments', { method: 'POST', body: payload }),
+  vendors: () => apiRequest('/vendors'),
   doctors: (params = {}) => apiRequest(`/doctors${Object.keys(params).length ? `?${new URLSearchParams(params)}` : ''}`),
   notifications: (params = {}) => apiRequest(`/notifications/me?${new URLSearchParams(params)}`),
   notificationSummary: () => apiRequest('/notifications/me/summary'),
