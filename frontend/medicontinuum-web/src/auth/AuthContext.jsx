@@ -48,6 +48,12 @@ export function AuthProvider({ children }) {
   }, [clearSession]);
 
   useEffect(() => {
+    const onAuthExpired = () => clearSession();
+    window.addEventListener('mc:auth-expired', onAuthExpired);
+    return () => window.removeEventListener('mc:auth-expired', onAuthExpired);
+  }, [clearSession]);
+
+  useEffect(() => {
     let active = true;
     const restore = async () => {
       if (!authTokens.getAccess()) {
