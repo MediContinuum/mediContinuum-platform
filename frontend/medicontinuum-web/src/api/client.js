@@ -128,6 +128,8 @@ export const api = {
   inventoryAnalytics: (period = '30d') => apiRequest(`/analytics/inventory?period=${encodeURIComponent(period)}`),
   adherenceAnalytics: (period = '30d') => apiRequest(`/analytics/adherence?period=${encodeURIComponent(period)}`),
   forecastAnalytics: (period = '30d') => apiRequest(`/analytics/forecast?period=${encodeURIComponent(period)}`),
+  geminiStatus: () => apiRequest('/ai/status', { auth: false }),
+  geminiDemoChat: (payload) => apiRequest('/ai/demo-chat', { method: 'POST', body: payload, auth: false }),
   geminiChat: (payload) => apiRequest('/ai/chat', { method: 'POST', body: payload }),
 };
 
