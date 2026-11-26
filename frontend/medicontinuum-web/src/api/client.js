@@ -3,6 +3,10 @@ const ACCESS_KEY = 'mc.auth.access';
 const REFRESH_KEY = 'mc.auth.refresh';
 let refreshPromise;
 
+function notifyAuthExpired() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('mc:auth-expired'));
+}
+
 export const authTokens = {
   getAccess: () => sessionStorage.getItem(ACCESS_KEY),
   getRefresh: () => sessionStorage.getItem(REFRESH_KEY),
@@ -42,6 +46,7 @@ async function refreshAccessToken() {
       const body = await readBody(response);
       if (!response.ok || !body?.accessToken || !body?.refreshToken) {
         authTokens.clear();
+        notifyAuthExpired();
         return null;
       }
       authTokens.save(body);
@@ -84,7 +89,10 @@ export async function apiRequest(path, options = {}) {
 
   const result = await readBody(response);
   if (!response.ok) {
-    if (response.status === 401 && auth) authTokens.clear();
+    if (response.status === 401 && auth) {
+      authTokens.clear();
+      notifyAuthExpired();
+    }
     const error = new Error(messageFrom(result, response.status));
     error.status = response.status;
     error.body = result;
