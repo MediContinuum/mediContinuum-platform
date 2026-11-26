@@ -50,11 +50,11 @@ public class GeminiAssistantService {
     public GeminiAssistantService(
         ObjectMapper objectMapper,
         @Value("${app.ai.gemini.api-key:}") String apiKey,
-        @Value("${app.ai.gemini.model:gemini-3.6-flash}") String model
+        @Value("${app.ai.gemini.model:gemini-3.8-flash}") String model
     ) {
         this.objectMapper = objectMapper;
         this.apiKey = apiKey == null ? "" : apiKey.trim();
-        this.model = model == null || model.isBlank() ? "gemini-3.6-flash" : model.trim();
+        this.model = model == null || model.isBlank() ? "gemini-3.8-flash" : model.trim();
     }
 
     public boolean isConfigured() {
