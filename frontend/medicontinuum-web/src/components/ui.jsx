@@ -18,7 +18,7 @@ export function Img({ src, alt, className = '' }) {
 }
 
 export function Card({ children, className = '' }) {
-  const noPadding = /(?:^|\\s)p-0(?:\\s|$)/.test(className);
+  const noPadding = className.split(' ').includes('p-0');
   return <div className={`rounded-2xl border border-slate-200 bg-white ${noPadding ? '' : 'p-5'} shadow-sm ${className}`}>{children}</div>;
 }
 
