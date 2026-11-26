@@ -1,65 +1,54 @@
-import { useEffect, useRef, useState } from 'react';
-import { Bot, ImagePlus, Send, Sparkles, X } from 'lucide-react';
-import { MEDICINES } from '@/data/mock';
-import { patientActions, stockOf, usePatient } from '@/store/patientStore';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Bot, RefreshCw, Send, ShieldCheck, Sparkles, X } from 'lucide-react';
+import { usePatient } from '@/store/patientStore';
 import { buildSnapshot } from '@/lib/snapshot';
 import { askGemini } from '@/lib/gemini';
 import { useAuth } from '@/auth/AuthContext';
 import { api } from '@/api/client';
 
-const REFUSAL = 'I can help with your medication schedule, medicine stock, prescriptions, appointments and general healthcare information. Please ask a healthcare-related question.';
-const MEDICAL_WORDS = /medic|tablet|pill|capsule|syrup|dose|dosage|drug|prescri|pharmac|doctor|hospital|clinic|patient|health|disease|symptom|fever|cough|pain|infection|diabet|blood pressure|heart|cholesterol|asthma|allerg|vitamin|antibiotic|vaccine|side effect|stock|refill|adherence|reminder|schedule|inventory|expir|treatment|diagnos|kidney|liver|nausea|insulin|weight|exercise/i;
 const EMERGENCY = /overdose|poisoning|cannot breathe|can't breathe|chest pain|unconscious|severe bleeding|suicid/i;
-const TOOK = /\b(took|taken|had|swallowed)\b/i;
 
-function findMedicines(question) {
-  const lower = question.toLowerCase();
-  return MEDICINES.filter((medicine) =>
-    lower.includes(medicine.name.toLowerCase()) ||
-    (medicine.generic && lower.includes(medicine.generic.split(' ')[0].toLowerCase()))
-  );
-}
-
-function localAnswer(question, state, snapshot, medicines, isAuthenticated) {
+function localDemoAnswer(question, state, snapshot) {
   const q = question.toLowerCase().trim();
-  if (EMERGENCY.test(q)) return '🚨 This may be a medical emergency. Call 112 in India or go to the nearest emergency department now. Do not wait for an AI response.';
-
-  // Local schedule and stock actions belong to the synthetic guest demo, never a signed-in medical record.
-  if (!isAuthenticated && TOOK.test(q) && medicines.length) {
-    return medicines.map((medicine) => {
-      const result = patientActions.recordIntake({ medicine: medicine.name, source: 'chat' });
-      return `Logged ${medicine.name} in the local demo tracker. Approximate sample stock remaining: ${result?.left ?? 0}.`;
-    }).join('\n');
-  }
-  if (!isAuthenticated && /\b(left|stock|available|quantity|how many)\b/.test(q) && medicines.length) {
-    return medicines.map((medicine) => `${medicine.name}: ${stockOf(state.inventory, medicine.name)} sample units in demo stock.`).join('\n');
-  }
-  if (!isAuthenticated && /\b(low stock|refill|running out)\b/.test(q)) {
-    return snapshot.low?.length
-      ? 'Sample low-stock items:\n' + snapshot.low.map((item) => `${item.medicine}: ${item.quantity} units`).join('\n')
-      : 'No low-stock medicines are shown in this sample dataset.';
-  }
-  if (!isAuthenticated && (/\b(due|pending|reminders?|schedule)\b|doses?.*today|today.*doses?/.test(q))) {
-    const pending = state.doses.filter((dose) => dose.status === 'PENDING');
-    return pending.length
-      ? 'Pending sample doses:\n' + pending.map((dose) => `${dose.time} — ${dose.medicine}`).join('\n')
-      : 'All sample doses are marked complete today.';
+  if (EMERGENCY.test(q)) {
+    return '🚨 This may be a medical emergency. Call 112 in India or go to the nearest emergency department now. Do not wait for an AI response.';
   }
   if (/\b(hello|hi|hey|good morning|good afternoon|good evening)\b/.test(q) && q.split(/\s+/).length <= 5) {
-    return 'Hello! I am the MediContinuum Assistant. I can help you explore the platform and understand the available data.';
+    return 'Hello! I’m the MediContinuum Assistant. Ask me about medicines, medication continuity, inventory or how to use this demo.';
   }
-  if (/\b(thanks|thank you)\b/.test(q)) return 'You are welcome. Stay well!';
+  if (/\b(thanks|thank you)\b/.test(q)) return 'You’re welcome. Stay well!';
+  if (/\b(low stock|refill|running out)\b/.test(q)) {
+    return snapshot.low?.length
+      ? 'Your sample low-stock items are:\n' + snapshot.low.map((item) => `• ${item.medicine}: ${item.quantity} units`).join('\n')
+      : 'There are no low-stock medicines in the current sample inventory.';
+  }
+  if (/\b(due|pending|reminders?|schedule)\b|doses?.*today|today.*doses?/.test(q)) {
+    const pending = state.doses.filter((dose) => dose.status === 'PENDING');
+    return pending.length
+      ? 'Your sample pending doses are:\n' + pending.map((dose) => `• ${dose.time} — ${dose.medicine}`).join('\n')
+      : 'All doses in today’s sample schedule are marked complete.';
+  }
+  const medicine = state.inventory.find((item) =>
+    q.includes(item.medicine.toLowerCase())
+  );
+  if (medicine && /\b(left|stock|available|quantity|how many)\b/.test(q)) {
+    const quantity = state.inventory
+      .filter((item) => item.medicine === medicine.medicine)
+      .reduce((total, item) => total + Number(item.quantity || 0), 0);
+    return `${medicine.medicine}: ${quantity} sample ${String(medicine.stockUnit || 'units').toLowerCase()} available in the browser demo.`;
+  }
   return null;
 }
 
 async function buildLiveContext() {
-  // Do not send browser demo schedules or mock patient identities to an authenticated AI session.
+  // No mocked patient identity, mock prescription, or browser-side dose data is sent to an authenticated chat.
   const [inventoryResult, adherenceResult] = await Promise.allSettled([
     api.inventory(),
     api.adherenceAnalytics('30d'),
   ]);
   const inventory = inventoryResult.status === 'fulfilled' ? inventoryResult.value || [] : [];
   const adherence = adherenceResult.status === 'fulfilled' ? adherenceResult.value : null;
+
   const supply = inventory.map((item) => ({
     medicine: item.medicineName,
     quantity: Number(item.availableQuantity || 0),
@@ -70,9 +59,9 @@ async function buildLiveContext() {
       batchNumber: batch.batchNumber,
       expiryDate: batch.expiryDate,
       quantityRemaining: batch.quantityRemaining,
-      status: batch.status,
     })),
   }));
+
   return {
     percent: adherence?.adherenceRate ?? null,
     doses: [],
@@ -80,25 +69,32 @@ async function buildLiveContext() {
     low: supply.filter((item) => item.lowStock),
     expiring: supply.flatMap((item) => item.batches
       .filter((batch) => batch.expiryDate)
-      .map((batch) => ({ medicine: item.medicine, batchNumber: batch.batchNumber, expiryDate: batch.expiryDate, daysLeft: Math.ceil((new Date(batch.expiryDate) - new Date()) / 86400000) }))
+      .map((batch) => ({
+        medicine: item.medicine,
+        batchNumber: batch.batchNumber,
+        daysLeft: Math.ceil((new Date(batch.expiryDate) - new Date()) / 86400000),
+      }))
     ).filter((item) => item.daysLeft <= 30),
     activePrescriptions: [],
-    log: [],
     dataNotes: [
-      inventoryResult.status === 'fulfilled' ? 'Inventory is live backend data.' : 'Live inventory could not be retrieved.',
-      adherence ? 'Adherence is a 30-day aggregate from the backend analytics endpoint; individual dose schedule records are not exposed by the current patient API.' : 'Live adherence analytics could not be retrieved.',
-      'No live patient name, email, or Global ID is sent to the Gemini model.',
+      inventoryResult.status === 'fulfilled'
+        ? 'Inventory is live backend data.'
+        : 'Live inventory was not available for this request.',
+      adherence
+        ? 'Adherence is a 30-day aggregate from backend analytics. Individual dose schedules are not exposed by the current patient API.'
+        : 'Live adherence analytics were not available for this request.',
+      'No user name, email or Global ID is sent to Gemini.',
     ],
   };
 }
 
-function offlineAnswer(question) {
-  const q = question.toLowerCase();
-  if (/\bdoctor|physician\b/.test(q)) return 'A doctor is a qualified healthcare professional who evaluates patients and recommends care. Ask a licensed clinician about your personal treatment.';
-  if (/\bhospital\b/.test(q)) return 'A hospital provides medical assessment, treatment and emergency care. For an emergency in India, call 112.';
-  if (/\bpharmacy|pharmacist|chemist\b/.test(q)) return 'A pharmacy dispenses medicines. A pharmacist can help explain medicine labels and safe-use instructions.';
-  if (/\bmedicine|medication|tablet|drug\b/.test(q)) return 'Use medicines only according to a prescription or advice from a qualified healthcare professional. Do not change a dose based on an AI response.';
-  return 'The AI service is unavailable right now. You can still explore the sample dashboard and try again after the backend Gemini service is configured.';
+function displayError(error) {
+  if (error?.status === 401) return 'Your session has expired. Log in again and retry.';
+  if (error?.status === 403) return 'Your account does not have access to this assistant.';
+  if (error?.status === 429) return 'The AI request limit has been reached. Wait a little and retry.';
+  if (error?.status === 503) return error.message || 'Gemini is not configured on the backend yet.';
+  if (error?.status === 502 || error?.status === 504) return error.message || 'Gemini could not complete the request. Please retry.';
+  return error?.message || 'The assistant could not reach the AI service. Check the backend and try again.';
 }
 
 export default function ChatWidget() {
@@ -108,90 +104,182 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'bot', text: 'Hi! I’m MediContinuum Assistant. Ask me about medication schedules, sample stock or healthcare information.' },
+    { role: 'bot', text: 'Hi! I’m MediContinuum Assistant. Ask me about medicines, medication continuity, inventory or the MediContinuum platform.' },
   ]);
+  const [aiStatus, setAiStatus] = useState({ loading: true, configured: false, model: '', message: 'Checking Gemini service…' });
   const [aiError, setAiError] = useState('');
-  const fileRef = useRef(null);
+  const [lastFailedQuestion, setLastFailedQuestion] = useState('');
   const endRef = useRef(null);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading, open]);
-  const addMessage = (message) => setMessages((old) => [...old, message]);
+  const checkStatus = useCallback(async () => {
+    setAiStatus((current) => ({ ...current, loading: true }));
+    try {
+      const result = await api.geminiStatus();
+      setAiStatus({
+        loading: false,
+        configured: Boolean(result?.configured),
+        model: result?.model || '',
+        message: result?.message || 'Gemini is ready.',
+      });
+    } catch (error) {
+      setAiStatus({
+        loading: false,
+        configured: false,
+        model: error?.body?.model || '',
+        message: error?.body?.message || error.message || 'Could not check Gemini status.',
+      });
+    }
+  }, []);
 
-  const send = async (raw) => {
-    const question = raw.trim();
+  useEffect(() => { checkStatus(); }, [checkStatus]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages, loading, open, aiError]);
+
+  const send = useCallback(async (raw) => {
+    const question = String(raw || '').trim();
     if (!question || loading) return;
-    const history = messages.slice(-8).filter((message) => message.text);
-    addMessage({ role: 'user', text: question });
+
+    const previousHistory = messages.slice(-8).filter((message) => message.text);
+    setMessages((old) => [...old, { role: 'user', text: question }]);
     setInput('');
     setLoading(true);
     setAiError('');
+    setLastFailedQuestion('');
+
     try {
-      const demoSnapshot = isAuthenticated ? null : buildSnapshot(state);
-      const medicines = isAuthenticated ? [] : findMedicines(question);
-      let answer = localAnswer(question, state, demoSnapshot, medicines, isAuthenticated);
-
-      if (!answer && !MEDICAL_WORDS.test(question) && !history.some((message) => MEDICAL_WORDS.test(message.text || ''))) {
-        answer = REFUSAL;
+      if (EMERGENCY.test(question)) {
+        setMessages((old) => [...old, {
+          role: 'bot',
+          text: '🚨 This may be a medical emergency. Call 112 in India or go to the nearest emergency department now. Do not wait for an AI response.',
+        }]);
+        return;
       }
 
-      if (!answer && isAuthenticated) {
-        try {
-          const liveSnapshot = await buildLiveContext();
-          answer = await askGemini({ prompt: question, snapshot: liveSnapshot, history });
-        } catch (error) {
-          setAiError(error.message || 'Gemini service is unavailable.');
-          answer = offlineAnswer(question);
-        }
-      } else if (!answer) {
-        answer = 'Sign in to use the Gemini-powered assistant. The demo dashboard and its sample-data answers remain available without an account.';
+      if (!aiStatus.configured) {
+        throw Object.assign(new Error(aiStatus.message || 'Gemini API key is not configured on the backend.'), { status: 503 });
       }
-      addMessage({ role: 'bot', text: answer });
+
+      const isDemo = !isAuthenticated;
+      const snapshot = isDemo
+        ? { ...buildSnapshot(state), syntheticDemoData: true }
+        : await buildLiveContext();
+
+      // Guest presentation chats use only the synthetic demo context. Signed-in chats use
+      // the authenticated endpoint and only data returned by the patient backend APIs.
+      const answer = await askGemini({
+        prompt: question,
+        snapshot,
+        history: previousHistory,
+        demo: isDemo,
+      });
+
+      setMessages((old) => [...old, { role: 'bot', text: answer }]);
     } catch (error) {
-      addMessage({ role: 'bot', text: 'Something went wrong while preparing the answer. Please try again.' });
+      const friendly = displayError(error);
+      setAiError(friendly);
+      setLastFailedQuestion(question);
+      setMessages((old) => [...old, {
+        role: 'bot',
+        text: `I couldn’t get a Gemini response. ${friendly}`,
+      }]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [aiStatus, isAuthenticated, loading, messages, state]);
 
-  const attachPhoto = (file) => {
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      addMessage({ role: 'bot', text: 'Please choose an image file.' });
-      return;
-    }
-    const imageUrl = URL.createObjectURL(file);
-    addMessage({ role: 'user', text: `Attached image: ${file.name}`, imageUrl });
-    addMessage({ role: 'bot', text: 'Prescription OCR is not connected in this frontend yet. Do not rely on an AI guess for medicine identification; read the prescription with your pharmacist or clinician.' });
+  const retry = () => {
+    if (!lastFailedQuestion || loading) return;
+    send(lastFailedQuestion);
   };
 
   return <>
-    <button type="button" onClick={() => setOpen((value) => !value)} aria-label="MediContinuum assistant"
-      className="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-teal-600 text-white shadow-lg hover:bg-teal-700">
-      {open ? <X/> : <Sparkles/>}
+    <button
+      type="button"
+      onClick={() => setOpen((value) => !value)}
+      aria-label="MediContinuum AI assistant"
+      aria-expanded={open}
+      className="fixed bottom-5 right-5 z-50 grid size-14 place-items-center rounded-full bg-teal-700 text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-teal-800 focus:outline-none focus:ring-4 focus:ring-teal-200"
+    >
+      {open ? <X size={22}/> : <Sparkles size={22}/>}
     </button>
-    {open && <section className="fixed bottom-24 right-5 z-50 flex h-[30rem] w-[23rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl" aria-label="MediContinuum AI assistant">
-      <header className="flex items-center justify-between bg-teal-700 px-4 py-3 text-white">
-        <div className="flex items-center gap-2"><span className="grid size-8 place-items-center rounded-lg bg-white/15"><Bot size={18}/></span><div><p className="text-sm font-semibold">MediContinuum Assistant</p><p className="text-[11px] text-teal-100">{isAuthenticated ? 'Gemini via secure backend' : 'Demo assistant · sign in for Gemini'}</p></div></div>
-        <button type="button" onClick={() => setOpen(false)} aria-label="Close assistant"><X size={18}/></button>
+
+    {open && <section
+      className="fixed bottom-24 right-4 z-50 flex h-[min(40rem,calc(100dvh-8rem))] w-[min(25rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl sm:right-5"
+      aria-label="MediContinuum AI assistant"
+    >
+      <header className="flex items-center justify-between gap-3 bg-teal-800 px-4 py-3 text-white">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/15"><Bot size={21}/></span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">MediContinuum Assistant</p>
+            <p className="truncate text-[11px] text-teal-100">
+              {aiStatus.loading ? 'Checking AI service…' : aiStatus.configured ? `Gemini ready · ${aiStatus.model}` : 'Gemini not configured'}
+            </p>
+          </div>
+        </div>
+        <button type="button" onClick={() => setOpen(false)} aria-label="Close assistant" className="rounded-lg p-2 hover:bg-white/10"><X size={18}/></button>
       </header>
-      <div className="flex-1 space-y-3 overflow-y-auto p-3 text-sm">
-        {messages.map((message, index) => <div key={index} className={message.role === 'user' ? 'text-right' : ''}>
-          <div className={`inline-block max-w-[88%] whitespace-pre-line rounded-2xl px-3 py-2 text-left ${message.role === 'user' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-800'}`}>
-            {message.imageUrl && <img src={message.imageUrl} alt="User attached" className="mb-2 max-h-36 rounded-lg"/>}
+
+      <div className="border-b border-slate-100 bg-slate-50 px-4 py-2">
+        <div className="flex items-center gap-2 text-[11px] text-slate-600">
+          <ShieldCheck size={14} className="shrink-0 text-teal-700"/>
+          <span>{isAuthenticated ? 'Signed-in chat uses backend inventory and aggregate adherence only.' : 'Presentation mode uses synthetic Kalyani demo data only.'}</span>
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4 text-sm" aria-live="polite" aria-busy={loading}>
+        {messages.map((message, index) => <div key={index} className={message.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+          <div className={`max-w-[90%] whitespace-pre-line rounded-2xl px-3.5 py-2.5 leading-relaxed ${message.role === 'user' ? 'rounded-br-md bg-teal-700 text-white' : 'rounded-bl-md bg-slate-100 text-slate-800'}`}>
             {message.text}
           </div>
         </div>)}
-        {loading && <p className="text-xs text-slate-500">Assistant is thinking…</p>}
-        {aiError && <p role="status" className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">Gemini issue: {aiError}</p>}
+
+        {loading && <div className="flex justify-start">
+          <div className="rounded-2xl rounded-bl-md bg-slate-100 px-4 py-3 text-xs text-slate-600">
+            <span className="inline-flex items-center gap-2"><span className="size-2 animate-pulse rounded-full bg-teal-600"/>{'Gemini is generating a response…'}</span>
+          </div>
+        </div>}
+
+        {!aiStatus.loading && !aiStatus.configured && <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+          <strong>AI configuration required</strong>
+          <p className="mt-1">{aiStatus.message}</p>
+          <button type="button" onClick={checkStatus} className="mt-2 inline-flex items-center gap-1 font-semibold underline"><RefreshCw size={12}/> Check again</button>
+        </div>}
+
+        {aiError && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-800" role="alert">
+          <p className="font-semibold">Gemini request failed</p>
+          <p className="mt-1">{aiError}</p>
+          <button type="button" onClick={retry} disabled={loading || !lastFailedQuestion} className="mt-2 inline-flex items-center gap-1.5 font-semibold underline disabled:opacity-50"><RefreshCw size={12}/> Retry request</button>
+        </div>}
+
         <div ref={endRef}/>
       </div>
-      <form onSubmit={(event) => { event.preventDefault(); send(input); }} className="flex items-center gap-1 border-t border-slate-200 p-2">
-        <input ref={fileRef} type="file" accept="image/*" hidden onChange={(event) => { attachPhoto(event.target.files?.[0]); event.target.value = ''; }}/>
-        <button type="button" onClick={() => fileRef.current?.click()} aria-label="Attach image" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><ImagePlus size={18}/></button>
-        <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask a healthcare question…" disabled={loading}
-          className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-teal-500"/>
-        <button type="submit" aria-label="Send message" disabled={loading || !input.trim()} className="rounded-lg bg-teal-600 p-2 text-white disabled:opacity-50"><Send size={18}/></button>
+
+      <form onSubmit={(event) => { event.preventDefault(); send(input); }} className="flex items-end gap-2 border-t border-slate-200 bg-white p-3">
+        <textarea
+          rows={1}
+          maxLength={1600}
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+              event.preventDefault();
+              send(input);
+            }
+          }}
+          placeholder={aiStatus.configured ? 'Ask in English or Hinglish…' : 'Gemini needs backend configuration'}
+          disabled={loading || !aiStatus.configured}
+          className="max-h-28 min-h-10 min-w-0 flex-1 resize-y rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:bg-slate-50"
+        />
+        <button
+          type="submit"
+          aria-label="Send message"
+          disabled={loading || !input.trim() || !aiStatus.configured}
+          className="grid size-10 shrink-0 place-items-center rounded-xl bg-teal-700 text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+        >
+          {loading ? <RefreshCw size={17} className="animate-spin"/> : <Send size={17}/>}
+        </button>
       </form>
+      <p className="px-3 pb-2 text-center text-[10px] text-slate-400">AI-generated information only. Not a diagnosis or a substitute for your doctor.</p>
     </section>}
   </>;
 }
