@@ -91,7 +91,7 @@ async function buildLiveContext() {
 function displayError(error) {
   if (error?.status === 401) return 'Your session has expired. Log in again and retry.';
   if (error?.status === 403) return 'Your account does not have access to this assistant.';
-  if (error?.status === 429) return 'The AI request limit has been reached. Wait a little and retry.';
+  if (error?.status === 429) return error.message || 'The AI request limit has been reached. Wait a little and retry.';
   if (error?.status === 503) return error.message || 'Gemini is not configured on the backend yet.';
   if (error?.status === 502 || error?.status === 504) return error.message || 'Gemini could not complete the request. Please retry.';
   return error?.message || 'The assistant could not reach the AI service. Check the backend and try again.';
@@ -232,7 +232,7 @@ export default function ChatWidget() {
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">MediContinuum Assistant</p>
             <p className="truncate text-[11px] text-teal-100">
-              {aiStatus.loading ? 'Checking AI service…' : aiStatus.configured ? `Gemini ready · ${aiStatus.model}` : 'Gemini not configured'}
+              {aiStatus.loading ? 'Checking AI service…' : aiStatus.configured ? `Gemini configured · ${aiStatus.model}` : 'Gemini not configured'}
             </p>
           </div>
         </div>
