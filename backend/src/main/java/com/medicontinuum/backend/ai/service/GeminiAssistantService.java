@@ -96,10 +96,7 @@ public class GeminiAssistantService {
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(payload)))
                 .build();
 
-            HttpResponse<String> response = HTTP.send(
-                httpRequest,
-                HttpResponse.BodyHandlers.ofString()
-            );
+            HttpResponse<String> response = sendWithRetry(httpRequest);
 
             JsonNode body = response.body() == null || response.body().isBlank()
                 ? objectMapper.createObjectNode()
@@ -149,6 +146,32 @@ public class GeminiAssistantService {
                 "Could not communicate with Gemini. Check backend internet access and the Gemini API endpoint."
             );
         }
+    }
+
+
+    /**
+     * One bounded retry for transient upstream capacity/network timeouts.
+     * Invalid keys, invalid requests and quota (429) responses are not retried.
+     */
+    private HttpResponse<String> sendWithRetry(HttpRequest request)
+        throws IOException, InterruptedException {
+        for (int attempt = 0; attempt < 2; attempt++) {
+            try {
+                HttpResponse<String> response = HTTP.send(
+                    request,
+                    HttpResponse.BodyHandlers.ofString()
+                );
+                if (attempt == 0 && (response.statusCode() == 503 || response.statusCode() == 504)) {
+                    Thread.sleep(500);
+                    continue;
+                }
+                return response;
+            } catch (java.net.http.HttpTimeoutException exception) {
+                if (attempt == 1) throw exception;
+                Thread.sleep(500);
+            }
+        }
+        throw new IOException("Gemini request did not complete after retry.");
     }
 
     private ResponseStatusException upstreamException(int statusCode, JsonNode body) {
